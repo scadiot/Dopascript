@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DopaScript
 {
@@ -14,12 +12,27 @@ namespace DopaScript
         List<Value> _heap;
         Function _currentFunction;
 
+        public delegate Value FunctionDelegate(List<Value> values);
+        Dictionary<string, FunctionDelegate> _embededFunctions;
+        EmbededLibrary _embededLibrary;
+
         public Interpreter()
         {
+            _embededFunctions = new Dictionary<string, FunctionDelegate>();
+            _embededLibrary = new EmbededLibrary();
+            _embededFunctions = _embededLibrary.EmbededFunctions;
+
             InstructionExecutors.Add(typeof(InstructionAssignment), ExecuteInstructionAssignment);
             InstructionExecutors.Add(typeof(InstructionValue), ExecuteInstructionValue);
             InstructionExecutors.Add(typeof(InstructionFunction), ExecuteInstructionFunction);
             InstructionExecutors.Add(typeof(InstructionVariableValue), ExecuteInstructionVariableValue);
+            InstructionExecutors.Add(typeof(InstructionReturn), ExecuteInstructionReturn);
+            InstructionExecutors.Add(typeof(InstructionOperation), ExecuteInstructionOperation);
+        }
+
+        public void AddFunction(string name, FunctionDelegate function)
+        {
+            _embededFunctions.Add(name, function);
         }
 
         public void Parse(string source)
@@ -48,7 +61,13 @@ namespace DopaScript
 
         class InstructionResult
         {
+            public InstructionResult()
+            {
+                Return = false;
+            }
+
             public Value Value { get; set; }
+            public bool Return { get; set; }
         }
 
         InstructionResult ExecuteInstruction(Instruction instruction)
@@ -85,27 +104,27 @@ namespace DopaScript
 
         InstructionResult ExecuteInstructionFunction(Instruction instruction)
         {
+            InstructionResult result = new InstructionResult();
+
             InstructionFunction instructionFunction = instruction as InstructionFunction;
 
-            //Return value
-            _heap.Add(new Value());
-
+            List<Value> values = new List<Value>();
             foreach (var parameter in instructionFunction.Parameters)
             {
                 Value value = CopyValue(ExecuteInstruction(parameter).Value);
-                _heap.Add(value);
+                values.Add(value);
             }
 
-            if(instructionFunction.FunctionName == "print")
+            if (_embededFunctions.ContainsKey(instructionFunction.FunctionName))
             {
-                Console.WriteLine(_heap.Last().StringValue.ToString());
+                result.Value = _embededFunctions[instructionFunction.FunctionName](values);
             }
             else
             {
                 Function previousFunction = _currentFunction;
-
                 _currentFunction = _program.Functions.First(f => f.Name == instructionFunction.FunctionName);
 
+                _heap.AddRange(values);
                 int numberOfValueToAdd = _currentFunction.Variables.Count - _currentFunction.ParametersCount;
                 for (int i = 0;i < numberOfValueToAdd;i++)
                 {
@@ -114,18 +133,17 @@ namespace DopaScript
 
                 foreach (var functionInstruction in _currentFunction.Instructions)
                 {
-                    ExecuteInstruction(functionInstruction);
+                    InstructionResult r = ExecuteInstruction(functionInstruction);
+                    if(r != null && r.Return)
+                    {
+                        result.Value = r.Value;
+                    }
                 }
 
                 _currentFunction = previousFunction;
             }
 
             _heap.RemoveRange(_heap.Count - instructionFunction.Parameters.Count, instructionFunction.Parameters.Count);
-
-            InstructionResult result = new InstructionResult();
-            result.Value = _heap[_heap.Count - 1];
-            
-            _heap.RemoveAt(_heap.Count - 1);
 
             return result;
         }
@@ -143,6 +161,118 @@ namespace DopaScript
             };
         }
 
+        InstructionResult ExecuteInstructionReturn(Instruction instruction)
+        {
+            InstructionReturn instructionVariableValue = instruction as InstructionReturn;
+
+            Value value = null;
+            if (instructionVariableValue.ValueInstruction != null)
+            {
+                value = ExecuteInstruction(instructionVariableValue.ValueInstruction).Value;
+            }
+
+            return new InstructionResult()
+            {
+                Value = value,
+                Return = true
+            };
+        }
+
+        InstructionResult ExecuteInstructionOperation(Instruction instruction)
+        {
+            InstructionOperation instructionOperation = instruction as InstructionOperation;
+
+            List<Value> values = new List<Value>();
+            foreach(Instruction valueInstruction in instructionOperation.ValuesInstructions)
+            {
+                InstructionResult r = ExecuteInstruction(valueInstruction);
+                values.Add(r.Value);
+            }
+
+            Value leftValue = CopyValue(values.First());
+            for(int i = 0;i < instructionOperation.Operators.Count;i++)
+            {
+                InstructionOperation.OperatorType ope = instructionOperation.Operators[i];
+                Value rightValue = values[i + 1];
+                switch (ope)
+                {
+                    case InstructionOperation.OperatorType.Addition:
+                        leftValue.NumericValue = leftValue.NumericValue + rightValue.NumericValue;
+                        break;
+                    case InstructionOperation.OperatorType.Substraction:
+                        leftValue.NumericValue = leftValue.NumericValue - rightValue.NumericValue;
+                        break;
+                    case InstructionOperation.OperatorType.Multiplication:
+                        leftValue.NumericValue = leftValue.NumericValue * rightValue.NumericValue;
+                        break;
+                    case InstructionOperation.OperatorType.Division:
+                        leftValue.NumericValue = leftValue.NumericValue / rightValue.NumericValue;
+                        break;
+                    case InstructionOperation.OperatorType.Modulo:
+                        leftValue.NumericValue = leftValue.NumericValue % rightValue.NumericValue;
+                        break;
+                    case InstructionOperation.OperatorType.Or:
+                        leftValue.BoolValue = leftValue.BoolValue || rightValue.BoolValue;
+                        break;
+                    case InstructionOperation.OperatorType.And:
+                        leftValue.BoolValue = leftValue.BoolValue && rightValue.BoolValue;
+                        break;
+                    case InstructionOperation.OperatorType.TestEqual:
+                        switch (leftValue.Type)
+                        {
+                            case Value.DataType.String:
+                                leftValue.BoolValue = leftValue.StringValue == rightValue.StringValue;
+                                break;
+                            case Value.DataType.Numeric:
+                                leftValue.BoolValue = leftValue.NumericValue == rightValue.NumericValue;
+                                break;
+                            case Value.DataType.Boolean:
+                                leftValue.BoolValue = leftValue.BoolValue == rightValue.BoolValue;
+                                break;
+                        }    
+                        leftValue.Type = Value.DataType.Boolean;
+                        break;
+                    case InstructionOperation.OperatorType.TestNotEqual:
+                        switch (leftValue.Type)
+                        {
+                            case Value.DataType.String:
+                                leftValue.BoolValue = leftValue.StringValue != rightValue.StringValue;
+                                break;
+                            case Value.DataType.Numeric:
+                                leftValue.BoolValue = leftValue.NumericValue != rightValue.NumericValue;
+                                break;
+                            case Value.DataType.Boolean:
+                                leftValue.BoolValue = leftValue.BoolValue != rightValue.BoolValue;
+                                break;
+                        }
+                        leftValue.Type = Value.DataType.Boolean;
+                        break;
+                    case InstructionOperation.OperatorType.GreaterThan:
+                        leftValue.BoolValue = leftValue.NumericValue > rightValue.NumericValue;
+                        leftValue.Type = Value.DataType.Boolean;
+                        break;
+                    case InstructionOperation.OperatorType.LessThan:
+                        leftValue.BoolValue = leftValue.NumericValue < rightValue.NumericValue;
+                        leftValue.Type = Value.DataType.Boolean;
+                        break;
+                    case InstructionOperation.OperatorType.GreaterThanOrEqual:
+                        leftValue.BoolValue = leftValue.NumericValue >= rightValue.NumericValue;
+                        leftValue.Type = Value.DataType.Boolean;
+                        break;
+                    case InstructionOperation.OperatorType.LessThanOrEqual:
+                        leftValue.BoolValue = leftValue.NumericValue <= rightValue.NumericValue;
+                        leftValue.Type = Value.DataType.Boolean;
+                        break;
+                }
+            }
+
+            return new InstructionResult()
+            {
+                Value = leftValue,
+                Return = true
+            };
+        }
+
         Value GetVariableValue(Variable variable)
         {
             if (variable.Global)
@@ -153,8 +283,6 @@ namespace DopaScript
             {
                 return _heap[_heap.Count - _currentFunction.Variables.Count + variable.Index];
             }
-
-            return null;
         }
 
         Variable GetVariableByName(string name)
@@ -173,19 +301,19 @@ namespace DopaScript
         Value CopyValue(Value value)
         {
             Value newValue = new Value();
+            newValue.Type = value.Type;
             newValue.BoolValue = value.BoolValue;
-            newValue.IntValue = value.IntValue;
+            newValue.NumericValue = value.NumericValue;
             newValue.StringValue = value.StringValue;
-            newValue.FloatValue = value.FloatValue;
             return newValue;
         }
 
         void CopyValue(ref Value destination, Value value)
         {
+            destination.Type = value.Type;
             destination.BoolValue = value.BoolValue;
-            destination.IntValue = value.IntValue;
+            destination.NumericValue = value.NumericValue;
             destination.StringValue = value.StringValue;
-            destination.FloatValue = value.FloatValue;
         }
     }
 }

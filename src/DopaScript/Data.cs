@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DopaScript
 {
-    class Value
+    public class Value
     {
-        public int IntValue { get; set; }
-        public float FloatValue { get; set; }
+        public enum DataType { String, Numeric, Boolean }
+
+        public DataType Type { get; set; }
+
+        public decimal NumericValue { get; set; }
         public bool BoolValue { get; set; }
         public string StringValue { get; set; }
     }
@@ -72,6 +72,12 @@ namespace DopaScript
 
         public List<Instruction>  ValuesInstructions { get; set; }
         public List<OperatorType> Operators { get; set; }
+
+        public InstructionOperation()
+        {
+            ValuesInstructions = new List<Instruction>();
+            Operators = new List<OperatorType>();
+        }
     }
 
     class InstructionBloc : Instruction

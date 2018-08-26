@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data.cs" />
+    <Compile Include="EmbededLibrary.cs" />
     <Compile Include="Interpreter.cs" />
     <Compile Include="SyntaxAnalyser.cs" />
     <Compile Include="Tokenizer.cs" />

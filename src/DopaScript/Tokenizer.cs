@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DopaScript
 {
@@ -66,9 +63,9 @@ namespace DopaScript
                 {
                     token = TokenizeNumeric(source, ref index);
                 }
-                else if (source.Length < index + 1 && tokenTypeByValue.ContainsKey(source.Substring(0, 2)))
+                else if (index + 1 < source.Length && tokenTypeByValue.ContainsKey(source.Substring(index, 2)))
                 {
-                    token = GetTokenByValue(source.Substring(0, 2));
+                    token = GetTokenByValue(source.Substring(index, 2));
                     index += 2;
                 }
                 else

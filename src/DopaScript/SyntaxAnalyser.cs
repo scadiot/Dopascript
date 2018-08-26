@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DopaScript
 {
@@ -77,6 +75,14 @@ namespace DopaScript
             {
                 return AnalyseVariableValueInstruction(Tokens, index, out tokenCount);
             }
+            else if (Tokens[0].TokenName == Tokenizer.TokenName.Return)
+            {
+                return AnalyseReturn(Tokens, index, out tokenCount);
+            }
+            else if (Tokens.Length > 1 && Tokens[1].TokenType == Tokenizer.TokenType.Operator)
+            {
+                return AnalyseOperation(Tokens, index, out tokenCount);
+            }
 
             return null;
         }
@@ -114,11 +120,11 @@ namespace DopaScript
         void AnalyseFunctionDeclation(Tokenizer.Token[] Tokens, int index, out int tokenCount)
         {
             Function function = new Function();
-            function.Name = Tokens[1].Value;
+            function.Name = Tokens[index + 1].Value;
             _program.Functions.Add(function);
 
             Tokenizer.Token[] tokensParameters = GetTokensBetweenParentheses(Tokens, index + 2);
-            Tokenizer.Token[][] parameters = SplitParameters(tokensParameters);
+            Tokenizer.Token[][] parameters = SplitTokens(tokensParameters, t => t.TokenName != Tokenizer.TokenName.ParameterSeparation);
             function.ParametersCount = parameters.Length;
             int variableIndex = 0;
             foreach (Tokenizer.Token[] parameter in parameters)
@@ -172,27 +178,22 @@ namespace DopaScript
             result.Value = new Value();
             if (Tokens[0].TokenName == Tokenizer.TokenName.String)
             {
+                result.Value.Type = Value.DataType.String;
                 result.Value.StringValue = Tokens[0].Value;
             }
             else if (Tokens[0].TokenName == Tokenizer.TokenName.Number)
             {
-                if (Tokens[0].Value.Contains("."))
-                {
-                    result.Value.FloatValue = float.Parse(Tokens[0].Value);
-                    result.Value.IntValue = (int)result.Value.FloatValue;
-                }
-                else
-                {
-                    result.Value.IntValue = int.Parse(Tokens[0].Value);
-                    result.Value.FloatValue = (float)result.Value.FloatValue;
-                }
+                result.Value.Type = Value.DataType.Numeric;
+                result.Value.NumericValue = decimal.Parse(Tokens[0].Value.Replace(".", ","));
             }
             else if (Tokens[0].TokenName == Tokenizer.TokenName.False)
             {
+                result.Value.Type = Value.DataType.Boolean;
                 result.Value.BoolValue = false;
             }
             else if (Tokens[0].TokenName == Tokenizer.TokenName.True)
             {
+                result.Value.Type = Value.DataType.Boolean;
                 result.Value.BoolValue = true;
             }
 
@@ -215,9 +216,9 @@ namespace DopaScript
             instructionFunction.FunctionName = Tokens[index].Value;
 
             Tokenizer.Token[] tokensParametersBloc = GetTokensBetweenParentheses(Tokens, index + 1);
-            Tokenizer.Token[][] tokensParameters = SplitParameters(tokensParametersBloc);
+            Tokenizer.Token[][] tokensParameters = SplitTokens(tokensParametersBloc, t => t.TokenName != Tokenizer.TokenName.ParameterSeparation);
 
-            foreach(Tokenizer.Token[] tokensParameter in tokensParameters)
+            foreach (Tokenizer.Token[] tokensParameter in tokensParameters)
             {
                 int tokenCountParameter = 0;
                 Instruction instruction = AnalyseInstruction(tokensParameter, 0, out tokenCountParameter);
@@ -228,12 +229,67 @@ namespace DopaScript
             return instructionFunction;
         }
 
-        Tokenizer.Token[] GetTokensTo(Tokenizer.Token[] Tokens, int index, Tokenizer.TokenName tokenToFind)
+        Instruction AnalyseReturn(Tokenizer.Token[] Tokens, int index, out int tokenCount)
+        {
+            InstructionReturn instructionReturn = new InstructionReturn();
+
+            int tokenCount_rightValue = 0;
+            Tokenizer.Token[] instructionTokens = GetTokensTo(Tokens, index + 1, Tokenizer.TokenName.LineEnd);
+            instructionReturn.ValueInstruction = AnalyseInstruction(instructionTokens, 0, out tokenCount_rightValue);
+
+            tokenCount = 2 + instructionTokens.Length;
+
+            return instructionReturn;
+        }
+
+        Dictionary<Tokenizer.TokenName, InstructionOperation.OperatorType> TokenNameTooperatorType 
+            = new Dictionary<Tokenizer.TokenName, InstructionOperation.OperatorType>()
+        {
+            { Tokenizer.TokenName.Addition, InstructionOperation.OperatorType.Addition },
+            { Tokenizer.TokenName.Substraction, InstructionOperation.OperatorType.Substraction },
+            { Tokenizer.TokenName.Multiplication, InstructionOperation.OperatorType.Multiplication },
+            { Tokenizer.TokenName.Division, InstructionOperation.OperatorType.Division },
+            { Tokenizer.TokenName.Modulo, InstructionOperation.OperatorType.Modulo },
+            { Tokenizer.TokenName.Or, InstructionOperation.OperatorType.Or },
+            { Tokenizer.TokenName.And, InstructionOperation.OperatorType.And },
+            { Tokenizer.TokenName.TestEqual, InstructionOperation.OperatorType.TestEqual },
+            { Tokenizer.TokenName.TestNotEqual, InstructionOperation.OperatorType.TestNotEqual },
+            { Tokenizer.TokenName.GreaterThan, InstructionOperation.OperatorType.GreaterThan },
+            { Tokenizer.TokenName.LessThan, InstructionOperation.OperatorType.LessThan },
+            { Tokenizer.TokenName.GreaterThanOrEqual, InstructionOperation.OperatorType.GreaterThanOrEqual },
+            { Tokenizer.TokenName.LessThanOrEqual, InstructionOperation.OperatorType.LessThanOrEqual }
+        };
+
+        Instruction AnalyseOperation(Tokenizer.Token[] tokens, int index, out int tokenCount)
+        {
+            InstructionOperation instructionOperation = new InstructionOperation();
+
+            Tokenizer.Token[][] tokensOperands = SplitTokens(tokens, t => t.TokenType != Tokenizer.TokenType.Operator);
+            foreach(Tokenizer.Token[] operand in tokensOperands)
+            {
+                int tc = 0;
+                Instruction instruction = AnalyseInstruction(operand, 0, out tc);
+                instructionOperation.ValuesInstructions.Add(instruction);
+            }
+
+            int currentIndex = tokensOperands[0].Length;
+            for(int i = 1;i < tokensOperands.Length;i++)
+            {
+                InstructionOperation.OperatorType ope = TokenNameTooperatorType[tokens[currentIndex].TokenName];
+                instructionOperation.Operators.Add(ope);
+                currentIndex += 1 + tokensOperands[i].Length;
+            }
+
+            tokenCount = tokens.Length;
+            return instructionOperation;
+        }
+
+        Tokenizer.Token[] GetTokensTo(Tokenizer.Token[] tokens, int index, Tokenizer.TokenName tokenToFind)
         {
             List<Tokenizer.Token> result = new List<Tokenizer.Token>();
-            while (Tokens[index].TokenName != tokenToFind)
+            while (tokens[index].TokenName != tokenToFind)
             {
-                result.Add(Tokens[index]);
+                result.Add(tokens[index]);
                 index++;
             }
             return result.ToArray();
@@ -273,8 +329,13 @@ namespace DopaScript
             return result.ToArray();
         }
 
-        Tokenizer.Token[][] SplitParameters(Tokenizer.Token[] tokens)
+        Tokenizer.Token[][] SplitTokens(Tokenizer.Token[] tokens, Func<Tokenizer.Token, bool> isSeparator )
         {
+            if(tokens.Count() == 0)
+            {
+                return new Tokenizer.Token[0][];
+            }
+
             List<Tokenizer.Token[]> parameters = new List<Tokenizer.Token[]>();
 
             int index = 0;
@@ -295,7 +356,7 @@ namespace DopaScript
                     }
                     index++;
                 } while (index < tokens.Length && 
-                         (tokens[index].TokenName != Tokenizer.TokenName.ParameterSeparation || openParentheses != 0));
+                         (isSeparator(tokens[index])  || openParentheses != 0));
                 parameters.Add(currentParameter.ToArray());
                 index++;
             } while (index < tokens.Length);
