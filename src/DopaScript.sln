@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2042
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DopaScript", "DopaScript\DopaScript.csproj", "{FE798958-7420-4ACF-A15E-5436E6F6C941}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{B7D40D8D-2F18-4FA7-BB42-1092B35B88F8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FE798958-7420-4ACF-A15E-5436E6F6C941}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE798958-7420-4ACF-A15E-5436E6F6C941}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE798958-7420-4ACF-A15E-5436E6F6C941}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE798958-7420-4ACF-A15E-5436E6F6C941}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B7D40D8D-2F18-4FA7-BB42-1092B35B88F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7D40D8D-2F18-4FA7-BB42-1092B35B88F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7D40D8D-2F18-4FA7-BB42-1092B35B88F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7D40D8D-2F18-4FA7-BB42-1092B35B88F8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {23F7EA56-B6E4-4660-A19B-B6BBCA7DABEF}
+	EndGlobalSection
+EndGlobal
