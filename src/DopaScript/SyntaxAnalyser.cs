@@ -83,6 +83,10 @@ namespace DopaScript
             {
                 return AnalyseOperation(Tokens, index, out tokenCount);
             }
+            else if (Tokens[0].TokenName == Tokenizer.TokenName.ParenthesisOpen)
+            {
+                return AnalyseParenthesisBloc(Tokens, index, out tokenCount);
+            }
 
             return null;
         }
@@ -282,6 +286,18 @@ namespace DopaScript
 
             tokenCount = tokens.Length;
             return instructionOperation;
+        }
+
+        Instruction AnalyseParenthesisBloc(Tokenizer.Token[] tokens, int index, out int tokenCount)
+        {
+            List<Tokenizer.Token> tokensList = new List<Tokenizer.Token>(tokens);
+            tokensList.RemoveAt(0);
+            tokensList.RemoveAt(tokensList.Count - 1);
+
+            tokenCount = tokens.Length;
+
+            int tc = 0;
+            return AnalyseInstruction(tokensList.ToArray(), 0, out tc);
         }
 
         Tokenizer.Token[] GetTokensTo(Tokenizer.Token[] tokens, int index, Tokenizer.TokenName tokenToFind)
