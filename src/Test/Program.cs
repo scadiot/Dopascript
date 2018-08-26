@@ -19,7 +19,7 @@ namespace Test
             return read();
         }
 
-        PrintText(6 * 2 == (6 * 2));
+        PrintText(2 * 2 * 4 == (13 - 5) * 2);
 
         var line;
         line = ReadText();

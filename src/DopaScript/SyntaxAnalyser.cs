@@ -63,7 +63,7 @@ namespace DopaScript
             }
             else if (Tokens.Length > 1 &&
                      Tokens[index].TokenType == Tokenizer.TokenType.Indentifier &&
-                     Tokens[index + 1].TokenName == Tokenizer.TokenName.ParenthesisOpen)
+                     Tokens[index + 1].TokenName == Tokenizer.TokenName.ParenthesesOpen)
             {
                 return AnalyseFunctionCall(Tokens, index, out tokenCount);
             }
@@ -83,9 +83,9 @@ namespace DopaScript
             {
                 return AnalyseOperation(Tokens, index, out tokenCount);
             }
-            else if (Tokens[0].TokenName == Tokenizer.TokenName.ParenthesisOpen)
+            else if (Tokens[0].TokenName == Tokenizer.TokenName.ParenthesesOpen)
             {
-                return AnalyseParenthesisBloc(Tokens, index, out tokenCount);
+                return AnalyseParenthesesBloc(Tokens, index, out tokenCount);
             }
 
             return null;
@@ -284,11 +284,54 @@ namespace DopaScript
                 currentIndex += 1 + tokensOperands[i].Length;
             }
 
+            //Sort operators priorities
+            foreach(InstructionOperation.OperatorType[] operatorPriority in InstructionOperation.OperatorsPriority)
+            {
+                if(!instructionOperation.Operators.Exists(o => !operatorPriority.Contains(o)))
+                {
+                    //All operators have the same priority
+                    break;
+                }                
+
+                InstructionOperation subInstruction = null;
+                for(int i = 0;i < instructionOperation.Operators.Count;i++)
+                {
+                    if(operatorPriority.Contains(instructionOperation.Operators[i]))
+                    {
+                        if(subInstruction == null)
+                        {
+                            subInstruction = new InstructionOperation();
+                            subInstruction.ValuesInstructions.Add(instructionOperation.ValuesInstructions[i]);
+                            instructionOperation.ValuesInstructions.RemoveAt(i);
+                        }
+
+                        subInstruction.Operators.Add(instructionOperation.Operators[i]);
+                        instructionOperation.Operators.RemoveAt(i);
+                        subInstruction.ValuesInstructions.Add(instructionOperation.ValuesInstructions[i]);
+                        instructionOperation.ValuesInstructions.RemoveAt(i);
+
+                        i--;
+                    }
+                    else
+                    {
+                        if(subInstruction != null)
+                        {
+                            instructionOperation.ValuesInstructions.Insert(i, subInstruction);
+                            subInstruction = null;
+                        }
+                    }
+                }
+                if(subInstruction != null)
+                {
+                    instructionOperation.ValuesInstructions.Add(subInstruction);
+                }
+            }
+
             tokenCount = tokens.Length;
             return instructionOperation;
         }
 
-        Instruction AnalyseParenthesisBloc(Tokenizer.Token[] tokens, int index, out int tokenCount)
+        Instruction AnalyseParenthesesBloc(Tokenizer.Token[] tokens, int index, out int tokenCount)
         {
             List<Tokenizer.Token> tokensList = new List<Tokenizer.Token>(tokens);
             tokensList.RemoveAt(0);
@@ -313,7 +356,7 @@ namespace DopaScript
 
         Tokenizer.Token[] GetTokensBetweenParentheses(Tokenizer.Token[] tokens, int index)
         {
-            return GetTokensBetweenParentheses(tokens, index, Tokenizer.TokenName.ParenthesisOpen, Tokenizer.TokenName.ParenthesisClose);
+            return GetTokensBetweenParentheses(tokens, index, Tokenizer.TokenName.ParenthesesOpen, Tokenizer.TokenName.ParenthesesClose);
         }
 
         Tokenizer.Token[] GetTokensInsideBloc(Tokenizer.Token[] tokens, int index)
@@ -362,11 +405,11 @@ namespace DopaScript
                 do
                 {
                     currentParameter.Add(tokens[index]);
-                    if (tokens[index].TokenName == Tokenizer.TokenName.ParenthesisOpen)
+                    if (tokens[index].TokenName == Tokenizer.TokenName.ParenthesesOpen)
                     {
                         openParentheses++;
                     }
-                    else if (tokens[index].TokenName == Tokenizer.TokenName.ParenthesisClose)
+                    else if (tokens[index].TokenName == Tokenizer.TokenName.ParenthesesClose)
                     {
                         openParentheses--;
                     }

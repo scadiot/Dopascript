@@ -67,8 +67,17 @@ namespace DopaScript
 
     class InstructionOperation : Instruction
     {
-        public enum OperatorType{ Addition, Substraction, Multiplication, Division, Modulo, Or, And,
-                                  TestEqual, TestNotEqual, GreaterThan, LessThan, GreaterThanOrEqual, LessThanOrEqual}
+        public enum OperatorType{ Multiplication, Addition, Substraction, Division, Modulo,
+                                  TestEqual, TestNotEqual, GreaterThan, LessThan, GreaterThanOrEqual, LessThanOrEqual, Or, And
+        }
+
+        public static OperatorType[][] OperatorsPriority = new OperatorType[][] { 
+            new OperatorType[] { OperatorType.Multiplication, OperatorType.Division, OperatorType.Modulo },
+            new OperatorType[] { OperatorType.Addition , OperatorType.Substraction },
+            new OperatorType[] { OperatorType.TestEqual, OperatorType.TestNotEqual,
+                                 OperatorType.GreaterThan, OperatorType.LessThan, OperatorType.GreaterThanOrEqual, OperatorType.LessThanOrEqual },
+            new OperatorType[] { OperatorType.Or , OperatorType.And }
+        };
 
         public List<Instruction>  ValuesInstructions { get; set; }
         public List<OperatorType> Operators { get; set; }

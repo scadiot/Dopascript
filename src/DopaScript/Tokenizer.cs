@@ -8,7 +8,7 @@ namespace DopaScript
         public enum TokenType { Indentifier, Keyword, Separator, Operator, Assignment, Literal, Comment }
         public enum TokenName { None,
                                    Condition, While, Do, For, Break, Return, Function, VariableDeclaration, Reference, Else,
-                                   BlocOpen, BlocClose, ParenthesisOpen, ParenthesisClose, ParameterSeparation, SquareBracketOpen, SquareBracketClose, LineEnd,
+                                   BlocOpen, BlocClose, ParenthesesOpen, ParenthesesClose, ParameterSeparation, SquareBracketOpen, SquareBracketClose, LineEnd,
                                    Addition, Substraction, Multiplication, Division, Modulo, Or, And,
                                    TestEqual, TestNotEqual, GreaterThan, LessThan, GreaterThanOrEqual, LessThanOrEqual,
                                    Assignment, AssignmentAddition, AssignmentSubstraction, AssignmentMultiplication, AssignmentDivision,
@@ -258,8 +258,8 @@ namespace DopaScript
         {
             { "{", TokenName.BlocOpen },
             { "}", TokenName.BlocClose },
-            { "(", TokenName.ParenthesisOpen },
-            { ")", TokenName.ParenthesisClose },
+            { "(", TokenName.ParenthesesOpen },
+            { ")", TokenName.ParenthesesClose },
             { ";", TokenName.LineEnd },
             { "[", TokenName.SquareBracketOpen },
             { "]", TokenName.SquareBracketClose },
