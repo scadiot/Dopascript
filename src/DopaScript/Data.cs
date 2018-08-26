@@ -114,12 +114,12 @@ namespace DopaScript
     class InstructionCondition : Instruction
     {
         public List<Instruction> TestInstructions { get; set; }
-        public List<Instruction> BlocInstructions { get; set; }
+        public List<List<Instruction>> BlocInstructions { get; set; }
 
         public InstructionCondition()
         {
             TestInstructions = new List<Instruction>();
-            BlocInstructions = new List<Instruction>();
+            BlocInstructions = new List<List<Instruction>>();
         }
     }
 

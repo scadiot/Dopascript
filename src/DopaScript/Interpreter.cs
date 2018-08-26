@@ -28,6 +28,7 @@ namespace DopaScript
             InstructionExecutors.Add(typeof(InstructionVariableValue), ExecuteInstructionVariableValue);
             InstructionExecutors.Add(typeof(InstructionReturn), ExecuteInstructionReturn);
             InstructionExecutors.Add(typeof(InstructionOperation), ExecuteInstructionOperation);
+            InstructionExecutors.Add(typeof(InstructionCondition), ExecuteInstructionCondition);
         }
 
         public void AddFunction(string name, FunctionDelegate function)
@@ -141,9 +142,9 @@ namespace DopaScript
                 }
 
                 _currentFunction = previousFunction;
-            }
 
-            _heap.RemoveRange(_heap.Count - instructionFunction.Parameters.Count, instructionFunction.Parameters.Count);
+                _heap.RemoveRange(_heap.Count - instructionFunction.Parameters.Count, instructionFunction.Parameters.Count);
+            }
 
             return result;
         }
@@ -270,6 +271,46 @@ namespace DopaScript
             {
                 Value = leftValue,
                 Return = true
+            };
+        }
+
+        InstructionResult ExecuteInstructionCondition(Instruction instruction)
+        {
+            InstructionCondition instructionCondition = instruction as InstructionCondition;
+
+            bool codeExecuted = false;
+            for (int i = 0;i < instructionCondition.TestInstructions.Count;i++)
+            {
+                if(ExecuteInstruction(instructionCondition.TestInstructions[i]).Value.BoolValue)
+                {
+                    foreach(Instruction blocInstruction in instructionCondition.BlocInstructions[i])
+                    {
+                        var result = ExecuteInstruction(blocInstruction);
+                        if(result.Return)
+                        {
+                            return result;
+                        }
+                    }
+                    codeExecuted = true;
+                    break;
+                }
+            }
+
+            if(!codeExecuted && instructionCondition.TestInstructions.Count != instructionCondition.BlocInstructions.Count)
+            {
+                foreach (Instruction blocInstruction in instructionCondition.BlocInstructions.Last())
+                {
+                    var result = ExecuteInstruction(blocInstruction);
+                    if (result.Return)
+                    {
+                        return result;
+                    }
+                }
+            }
+
+            return new InstructionResult()
+            {
+                Return = false
             };
         }
 

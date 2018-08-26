@@ -59,7 +59,7 @@ namespace DopaScript
                     token = TokenizeString(source, ref index);
                 }
                 else if (IsDigitOrDot(source[index]) || 
-                         (source[index] == '-' && source.Length < index + 1 && IsDigitOrDot(source[index + 1])))
+                         (source[index] == '-' && index + 1 < source.Length && IsDigitOrDot(source[index + 1])))
                 {
                     token = TokenizeNumeric(source, ref index);
                 }

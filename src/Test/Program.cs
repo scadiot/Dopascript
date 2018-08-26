@@ -6,25 +6,38 @@ namespace Test
     class Program
     {
         static string testSource =
-        @"
-        function PrintText(textToPrint)
-        {
-            var intermediateVar;
-            intermediateVar = textToPrint;
-            print(intermediateVar);
-        }
+@"
+var i;
+i = (13 - 5) * 2;
+print(i);
 
-        function ReadText()
-        {
-            return read();
-        }
-
-        PrintText(2 * 2 * 4 == (13 - 5) * 2);
-
-        var line;
-        line = ReadText();
-        PrintText(line);
-        ";
+";
+        //@"
+        //function PrintText(textToPrint)
+        //{
+        //    var intermediateVar;
+        //    intermediateVar = textToPrint;
+        //    print(intermediateVar);
+        //}
+        //
+        //function ReadText()
+        //{
+        //    return read();
+        //}
+        //
+        //if((13 - 5) * 2 == 16)
+        //{
+        //    PrintText(1);
+        //}
+        //else
+        //{
+        //    PrintText(0);
+        //}
+        //
+        //var line;
+        //line = ReadText();
+        //PrintText(line);
+        //";
 
         static void Main(string[] args)
         {
