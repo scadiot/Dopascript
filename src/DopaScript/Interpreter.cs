@@ -30,6 +30,7 @@ namespace DopaScript
             InstructionExecutors.Add(typeof(InstructionOperation), ExecuteInstructionOperation);
             InstructionExecutors.Add(typeof(InstructionCondition), ExecuteInstructionCondition);
             InstructionExecutors.Add(typeof(InstructionWhile), ExecuteInstructionWhile);
+            InstructionExecutors.Add(typeof(InstructionUnaryOperator), ExecuteInstructionUnaryOperator);
         }
 
         public void AddFunction(string name, FunctionDelegate function)
@@ -343,6 +344,26 @@ namespace DopaScript
             {
                 Return = false
             };
+        }
+
+        InstructionResult ExecuteInstructionUnaryOperator(Instruction instruction)
+        {
+            InstructionUnaryOperator instructionUnaryOperator = instruction as InstructionUnaryOperator;
+
+            Variable variable = GetVariableByName(instructionUnaryOperator.VariableName);
+
+            switch (instructionUnaryOperator.Type)
+            {
+                case InstructionUnaryOperator.OperatorType.Increment:
+                    GetVariableValue(variable).NumericValue++;
+                    break;
+                case InstructionUnaryOperator.OperatorType.Decrement:
+                    GetVariableValue(variable).NumericValue--;
+                    break;
+            }
+            
+
+            return null;
         }
 
         Value GetVariableValue(Variable variable)

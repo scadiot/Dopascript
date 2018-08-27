@@ -161,4 +161,15 @@ namespace DopaScript
     {
         public string VariableName { get; set; }
     }
+
+    class InstructionUnaryOperator : Instruction
+    {
+        public enum OperatorType
+        {
+            Increment, Decrement
+        }
+
+        public OperatorType Type { get; set; }
+        public string VariableName { get; set; }
+    }
 }

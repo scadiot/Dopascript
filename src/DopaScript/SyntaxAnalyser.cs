@@ -51,7 +51,7 @@ namespace DopaScript
             {
                 AnalyseVariableDeclation(tokens, index, out tokenCount);
             }
-            if (tokens[index].TokenName == Tokenizer.TokenName.Function)
+            else if (tokens[index].TokenName == Tokenizer.TokenName.Function)
             {
                 AnalyseFunctionDeclation(tokens, index, out tokenCount);
             }
@@ -66,6 +66,11 @@ namespace DopaScript
                      tokens[index + 1].TokenName == Tokenizer.TokenName.ParenthesesOpen)
             {
                 return AnalyseFunctionCall(tokens, index, out tokenCount);
+            }
+            else if (tokens.Length > 1 && tokens[index].TokenType == Tokenizer.TokenType.Indentifier &&
+                     (tokens[index + 1].TokenName == Tokenizer.TokenName.Decrement || tokens[index + 1].TokenName == Tokenizer.TokenName.Increment))
+            {
+                return AnalyseUnaryOperator(tokens, index, out tokenCount);
             }
             else if (tokens.Length == index + 1 && tokens[index].TokenType == Tokenizer.TokenType.Literal)
             {
@@ -455,6 +460,26 @@ namespace DopaScript
             tokenCount += 2 + tokensBloc.Length;
 
             return instructionWhile;
+        }
+
+        Instruction AnalyseUnaryOperator(Tokenizer.Token[] tokens, int index, out int tokenCount)
+        {
+            InstructionUnaryOperator instructionUnaryOperator = new InstructionUnaryOperator();
+
+            if (tokens[index + 1].TokenName == Tokenizer.TokenName.Increment)
+            {
+                instructionUnaryOperator.Type = InstructionUnaryOperator.OperatorType.Increment;
+                instructionUnaryOperator.VariableName = tokens[index].Value;
+            }
+
+            if (tokens[index + 1].TokenName == Tokenizer.TokenName.Decrement)
+            {
+                instructionUnaryOperator.Type = InstructionUnaryOperator.OperatorType.Decrement;
+                instructionUnaryOperator.VariableName = tokens[index].Value;
+            }
+
+            tokenCount = 3;
+            return instructionUnaryOperator;
         }
 
         Tokenizer.Token[] GetTokensTo(Tokenizer.Token[] tokens, int index, Tokenizer.TokenName tokenToFind)

@@ -5,12 +5,13 @@ namespace DopaScript
 {
     class Tokenizer
     {
-        public enum TokenType { Indentifier, Keyword, Separator, Operator, Assignment, Literal, Comment }
+        public enum TokenType { Indentifier, Keyword, Separator, Operator, UnaryOperator, Assignment, Literal, Comment }
         public enum TokenName { None,
                                    Condition, While, Do, For, Break, Return, Function, VariableDeclaration, Reference, Else,
                                    BlocOpen, BlocClose, ParenthesesOpen, ParenthesesClose, ParameterSeparation, SquareBracketOpen, SquareBracketClose, LineEnd,
                                    Addition, Substraction, Multiplication, Division, Modulo, Or, And,
                                    TestEqual, TestNotEqual, GreaterThan, LessThan, GreaterThanOrEqual, LessThanOrEqual,
+                                   Increment, Decrement, Negation,
                                    Assignment, AssignmentAddition, AssignmentSubstraction, AssignmentMultiplication, AssignmentDivision,
                                    String, Number, True, False,
                                    Comment
@@ -233,6 +234,10 @@ namespace DopaScript
             { "<=", TokenType.Operator },
             { ">=", TokenType.Operator },
 
+            { "!",  TokenType.UnaryOperator },
+            { "++", TokenType.UnaryOperator },
+            { "--", TokenType.UnaryOperator },
+
             { "=",  TokenType.Assignment },
             { "+=", TokenType.Assignment },
             { "-=", TokenType.Assignment },
@@ -279,6 +284,10 @@ namespace DopaScript
             { "<",  TokenName.LessThan },
             { ">=", TokenName.GreaterThanOrEqual },
             { "<=", TokenName.LessThanOrEqual },
+
+            { "!",  TokenName.Negation },
+            { "++", TokenName.Increment },
+            { "--", TokenName.Decrement },
 
             { "=",  TokenName.Assignment },
             { "+=", TokenName.AssignmentAddition },
