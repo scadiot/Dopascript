@@ -7,30 +7,8 @@ namespace Test
     {
         static string testSource =
 @"
-
-function fibonacci(n) 
-{
-    var i;
-    var j;
-    var k;
-
-    i = 0;
-    j = 1;
-    k = 0;
-
-    var temp;
-    while(k < n) {
-        temp = i + j;
-        i = j;
-        j = temp;
-        k = k + 1;
-    }
-    return i;
-}
-
-var f;
-f = fibonacci(7);
-print(f);
+var i, j = 2 + 2;
+print(i + j);
 ";
         //@"
         //function PrintText(textToPrint)

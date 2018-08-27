@@ -101,32 +101,70 @@ namespace DopaScript
 
         void AnalyseVariableDeclation(Tokenizer.Token[] Tokens, int index, out int tokenCount)
         {
-            Variable variable = new Variable();
-            if (Tokens[index + 1].TokenName == Tokenizer.TokenName.Reference)
+            List<Variable> variables = new List<Variable>();
+
+            tokenCount = 0;
+            do
             {
-                variable.Name = Tokens[index + 2].Value;
-                variable.Reference = true;
-                tokenCount = 4;
-            }
-            else
+                tokenCount += 1;
+
+                Variable variable = new Variable();
+                if (Tokens[index + tokenCount].TokenName == Tokenizer.TokenName.Reference)
+                {
+                    variable.Name = Tokens[index + tokenCount + 1].Value;
+                    variable.Reference = true;
+                    tokenCount += 2;
+                }
+                else
+                {
+                    variable.Name = Tokens[index + tokenCount].Value;
+                    variable.Reference = false;
+                    tokenCount += 1;
+                }
+
+                if (_currentFunction != null)
+                {
+                    variable.Index = _currentFunction.Variables.Count;
+                    variable.Global = false;
+                    _currentFunction.Variables.Add(variable);
+                }
+                else
+                {
+                    variable.Index = _program.Variables.Count;
+                    variable.Global = true;
+                    _program.Variables.Add(variable);
+                }
+
+                variables.Add(variable);
+            } while (Tokens[index + tokenCount].TokenName == Tokenizer.TokenName.ParameterSeparation);
+
+            if (Tokens[index + tokenCount].TokenName == Tokenizer.TokenName.Assignment)
             {
-                variable.Name = Tokens[index + 1].Value;
-                variable.Reference = false;
-                tokenCount = 3;
+                tokenCount++;
+
+                Tokenizer.Token[] instructionTokens = GetTokensTo(Tokens, index + tokenCount, Tokenizer.TokenName.LineEnd);
+                
+                foreach(Variable variable in variables)
+                {
+                    InstructionAssignment instructionAssignment = new InstructionAssignment();
+                    instructionAssignment.VariableName = variable.Name;
+                    int tc = 0;
+                    instructionAssignment.Instruction = AnalyseInstruction(instructionTokens, 0, out tc);
+
+                    if (_currentFunction != null)
+                    {
+                        _currentFunction.Instructions.Add(instructionAssignment);
+                    }
+                    else
+                    {
+                        _program.Instructions.Add(instructionAssignment);
+                    }
+                }
+
+                tokenCount += instructionTokens.Length;
             }
 
-            if (_currentFunction != null)
-            {
-                variable.Index = _currentFunction.Variables.Count;
-                variable.Global = false;
-                _currentFunction.Variables.Add(variable);
-            }
-            else
-            {
-                variable.Index = _program.Variables.Count;
-                variable.Global = true;
-                _program.Variables.Add(variable);
-            }
+            tokenCount++;
         }
 
         void AnalyseFunctionDeclation(Tokenizer.Token[] Tokens, int index, out int tokenCount)
