@@ -29,6 +29,7 @@ namespace DopaScript
             InstructionExecutors.Add(typeof(InstructionReturn), ExecuteInstructionReturn);
             InstructionExecutors.Add(typeof(InstructionOperation), ExecuteInstructionOperation);
             InstructionExecutors.Add(typeof(InstructionCondition), ExecuteInstructionCondition);
+            InstructionExecutors.Add(typeof(InstructionWhile), ExecuteInstructionWhile);
         }
 
         public void AddFunction(string name, FunctionDelegate function)
@@ -301,10 +302,40 @@ namespace DopaScript
                 foreach (Instruction blocInstruction in instructionCondition.BlocInstructions.Last())
                 {
                     var result = ExecuteInstruction(blocInstruction);
-                    if (result.Return)
+                    if (result != null && result.Return)
                     {
                         return result;
                     }
+                }
+            }
+
+            return new InstructionResult()
+            {
+                Return = false
+            };
+        }
+
+        InstructionResult ExecuteInstructionWhile(Instruction instruction)
+        {
+            InstructionWhile instructionWhile = instruction as InstructionWhile;
+
+            while (true)
+            {
+                Value value = ExecuteInstruction(instructionWhile.TestInstruction).Value;
+                if (value.BoolValue)
+                {
+                    foreach (Instruction blocInstruction in instructionWhile.BlocInstruction)
+                    {
+                        var result = ExecuteInstruction(blocInstruction);
+                        if (result != null && result.Return)
+                        {
+                            return result;
+                        }
+                    }
+                }
+                else
+                {
+                    break;
                 }
             }
 

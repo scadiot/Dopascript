@@ -91,6 +91,10 @@ namespace DopaScript
             {
                 return AnalyseCondition(tokens, index, out tokenCount);
             }
+            else if (tokens[index].TokenName == Tokenizer.TokenName.While)
+            {
+                return AnalyseWhile(tokens, index, out tokenCount);
+            }
 
             return null;
         }
@@ -389,6 +393,30 @@ namespace DopaScript
             {
                 return AnalyseOperation(tokens, index, out tokenCount);
             }
+        }
+
+        Instruction AnalyseWhile(Tokenizer.Token[] tokens, int index, out int tokenCount)
+        {
+            InstructionWhile instructionWhile = new InstructionWhile();
+
+            int tc;
+            tokenCount = 0;
+
+            Tokenizer.Token[] tokensTest = GetTokensBetweenParentheses(tokens, index + 1);
+            instructionWhile.TestInstruction = AnalyseInstruction(tokensTest, 0, out tc);
+            tokenCount += 3 + tokensTest.Length;
+
+            Tokenizer.Token[] tokensBloc = GetTokensInsideBloc(tokens, index + tokenCount);
+            int indexBloc = 0;
+            while (indexBloc < tokensBloc.Length)
+            {
+                Instruction instruction = AnalyseInstruction(tokensBloc, indexBloc, out tc);
+                instructionWhile.BlocInstruction.Add(instruction);
+                indexBloc += tc;
+            }
+            tokenCount += 2 + tokensBloc.Length;
+
+            return instructionWhile;
         }
 
         Tokenizer.Token[] GetTokensTo(Tokenizer.Token[] tokens, int index, Tokenizer.TokenName tokenToFind)

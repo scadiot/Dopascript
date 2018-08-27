@@ -275,10 +275,10 @@ namespace DopaScript
 
             { "==", TokenName.TestEqual },
             { "!=", TokenName.TestNotEqual },
-            { "<",  TokenName.GreaterThan  },
-            { ">",  TokenName.LessThan },
-            { "<=", TokenName.GreaterThanOrEqual },
-            { ">=", TokenName.LessThanOrEqual },
+            { ">",  TokenName.GreaterThan  },
+            { "<",  TokenName.LessThan },
+            { ">=", TokenName.GreaterThanOrEqual },
+            { "<=", TokenName.LessThanOrEqual },
 
             { "=",  TokenName.Assignment },
             { "+=", TokenName.AssignmentAddition },

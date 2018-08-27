@@ -126,7 +126,12 @@ namespace DopaScript
     class InstructionWhile : Instruction
     {
         public Instruction TestInstruction { get; set; }
-        public Instruction BlocInstruction { get; set; }
+        public List<Instruction> BlocInstruction { get; set; }
+
+        public InstructionWhile()
+        {
+            BlocInstruction = new List<Instruction>();
+        }
     }
 
     class InstructionFor : Instruction
