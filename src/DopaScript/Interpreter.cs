@@ -31,6 +31,7 @@ namespace DopaScript
             InstructionExecutors.Add(typeof(InstructionCondition), ExecuteInstructionCondition);
             InstructionExecutors.Add(typeof(InstructionWhile), ExecuteInstructionWhile);
             InstructionExecutors.Add(typeof(InstructionUnaryOperator), ExecuteInstructionUnaryOperator);
+            InstructionExecutors.Add(typeof(InstructionFor), ExecuteInstructionFor);
         }
 
         public void AddFunction(string name, FunctionDelegate function)
@@ -90,7 +91,25 @@ namespace DopaScript
             Value value = ExecuteInstruction(instructionAssignment.Instruction).Value;
 
             Value variableValue = GetVariableValue(variable);
-            CopyValue(ref variableValue, value);
+
+            switch (instructionAssignment.Type)
+            {
+                case InstructionAssignment.AssignmentType.Base:
+                    CopyValue(ref variableValue, value);
+                    break;
+                case InstructionAssignment.AssignmentType.Addition:
+                    variableValue.NumericValue += value.NumericValue;
+                    break;
+                case InstructionAssignment.AssignmentType.Multiplication:
+                    variableValue.NumericValue *= value.NumericValue;
+                    break;
+                case InstructionAssignment.AssignmentType.Substraction:
+                    variableValue.NumericValue -= value.NumericValue;
+                    break;
+                case InstructionAssignment.AssignmentType.Division:
+                    variableValue.NumericValue /= value.NumericValue;
+                    break;
+            }
 
             return null;
         }
@@ -320,24 +339,41 @@ namespace DopaScript
         {
             InstructionWhile instructionWhile = instruction as InstructionWhile;
 
-            while (true)
+            while (ExecuteInstruction(instructionWhile.TestInstruction).Value.BoolValue)
             {
-                Value value = ExecuteInstruction(instructionWhile.TestInstruction).Value;
-                if (value.BoolValue)
+                foreach (Instruction blocInstruction in instructionWhile.BlocInstruction)
                 {
-                    foreach (Instruction blocInstruction in instructionWhile.BlocInstruction)
+                    var result = ExecuteInstruction(blocInstruction);
+                    if (result != null && result.Return)
                     {
-                        var result = ExecuteInstruction(blocInstruction);
-                        if (result != null && result.Return)
-                        {
-                            return result;
-                        }
+                        return result;
                     }
                 }
-                else
+            }
+
+            return new InstructionResult()
+            {
+                Return = false
+            };
+        }
+
+        InstructionResult ExecuteInstructionFor(Instruction instruction)
+        {
+            InstructionFor instructionFor = instruction as InstructionFor;
+
+            ExecuteInstruction(instructionFor.InitInstruction);
+
+            while (ExecuteInstruction(instructionFor.TestInstruction).Value.BoolValue)
+            {
+                foreach (Instruction blocInstruction in instructionFor.BlocInstruction)
                 {
-                    break;
+                    var result = ExecuteInstruction(blocInstruction);
+                    if (result != null && result.Return)
+                    {
+                        return result;
+                    }
                 }
+                ExecuteInstruction(instructionFor.IncrementInstruction);
             }
 
             return new InstructionResult()

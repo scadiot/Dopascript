@@ -59,10 +59,11 @@ namespace DopaScript
 
     class InstructionAssignment : Instruction
     {
-        public enum Type { Base, Addition, Substraction, Division, Multiplication }
+        public enum AssignmentType { Base, Addition, Substraction, Division, Multiplication }
 
         public string VariableName { get; set; }
         public Instruction Instruction { get; set; }
+        public AssignmentType Type { get; set; }
     }
 
     class InstructionOperation : Instruction
@@ -138,8 +139,13 @@ namespace DopaScript
     {
         public Instruction InitInstruction { get; set; }
         public Instruction TestInstruction { get; set; }
-        public Instruction incrementInstruction { get; set; }
-        public Instruction BlocInstruction { get; set; }
+        public Instruction IncrementInstruction { get; set; }
+        public List<Instruction> BlocInstruction { get; set; }
+
+        public InstructionFor()
+        {
+            BlocInstruction = new List<Instruction>();
+        }
     }
 
     class InstructionReturn : Instruction

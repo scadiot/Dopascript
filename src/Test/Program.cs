@@ -7,8 +7,13 @@ namespace Test
     {
         static string testSource =
 @"
-var i, j = 2 + 2;
-print(i + j);
+var i, j = 0;
+
+for(i = 0;i < 20; i += 2)
+{
+    print(i);
+}
+
 ";
         //@"
         //function PrintText(textToPrint)

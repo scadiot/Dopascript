@@ -100,6 +100,10 @@ namespace DopaScript
             {
                 return AnalyseWhile(tokens, index, out tokenCount);
             }
+            else if (tokens[index].TokenName == Tokenizer.TokenName.For)
+            {
+                return AnalyseFor(tokens, index, out tokenCount);
+            }
 
             return null;
         }
@@ -213,10 +217,21 @@ namespace DopaScript
             tokenCount = tokensParameters.Length + tokensBloc.Length + 6;
         }
 
+        Dictionary<Tokenizer.TokenName, InstructionAssignment.AssignmentType> TokenNameToAssignmentType
+            = new Dictionary<Tokenizer.TokenName, InstructionAssignment.AssignmentType>()
+        {
+                { Tokenizer.TokenName.Assignment, InstructionAssignment.AssignmentType.Base },
+                { Tokenizer.TokenName.AssignmentAddition, InstructionAssignment.AssignmentType.Addition },
+                { Tokenizer.TokenName.AssignmentSubstraction, InstructionAssignment.AssignmentType.Substraction },
+                { Tokenizer.TokenName.AssignmentMultiplication, InstructionAssignment.AssignmentType.Multiplication },
+                { Tokenizer.TokenName.AssignmentDivision, InstructionAssignment.AssignmentType.Division }
+        };
+
         Instruction AnalyseAssignement(Tokenizer.Token[] Tokens, int index, out int tokenCount)
         {
             InstructionAssignment instructionAssignment = new InstructionAssignment();
             instructionAssignment.VariableName = Tokens[index].Value;
+            instructionAssignment.Type = TokenNameToAssignmentType[Tokens[index + 1].TokenName];
 
             int tokenCount_rightValue = 0;
             Tokenizer.Token[] instructionTokens = GetTokensTo(Tokens, index + 2, Tokenizer.TokenName.LineEnd);
@@ -356,7 +371,7 @@ namespace DopaScript
         {
             InstructionOperation instructionOperation = new InstructionOperation();
 
-            Tokenizer.Token[][] tokensOperands = SplitTokens(tokens, t => t.TokenType != Tokenizer.TokenType.Operator);
+            Tokenizer.Token[][] tokensOperands = SplitTokens(tokens, t => t.TokenType == Tokenizer.TokenType.Operator);
             foreach(Tokenizer.Token[] operand in tokensOperands)
             {
                 int tc = 0;
@@ -462,6 +477,35 @@ namespace DopaScript
             return instructionWhile;
         }
 
+        Instruction AnalyseFor(Tokenizer.Token[] tokens, int index, out int tokenCount)
+        {
+            tokenCount = 0;
+
+            InstructionFor instructionFor = new InstructionFor();
+            Tokenizer.Token[] tokensInstructions = GetTokensBetweenParentheses(tokens, index + 1);
+            Tokenizer.Token[][] tokensInstructionSplitted = SplitTokens(tokensInstructions, t => t.TokenName == Tokenizer.TokenName.LineEnd);
+
+            int tc = 0;
+            instructionFor.InitInstruction = AnalyseInstruction(tokensInstructionSplitted[0], 0, out tc);
+            instructionFor.TestInstruction = AnalyseInstruction(tokensInstructionSplitted[1], 0, out tc);
+            instructionFor.IncrementInstruction = AnalyseInstruction(tokensInstructionSplitted[2], 0, out tc);
+
+            tokenCount += tokensInstructions.Length + 3;
+
+            Tokenizer.Token[] tokensBloc = GetTokensInsideBloc(tokens, index + tokenCount);
+            int indexBloc = 0;
+            while (indexBloc < tokensBloc.Length)
+            {
+                Instruction instruction = AnalyseInstruction(tokensBloc, indexBloc, out tc);
+                instructionFor.BlocInstruction.Add(instruction);
+                indexBloc += tc;
+            }
+
+            tokenCount += 2 + tokensBloc.Length;
+
+            return instructionFor;
+        }            
+
         Instruction AnalyseUnaryOperator(Tokenizer.Token[] tokens, int index, out int tokenCount)
         {
             InstructionUnaryOperator instructionUnaryOperator = new InstructionUnaryOperator();
@@ -485,7 +529,7 @@ namespace DopaScript
         Tokenizer.Token[] GetTokensTo(Tokenizer.Token[] tokens, int index, Tokenizer.TokenName tokenToFind)
         {
             List<Tokenizer.Token> result = new List<Tokenizer.Token>();
-            while (tokens[index].TokenName != tokenToFind)
+            while (index < tokens.Length && tokens[index].TokenName != tokenToFind)
             {
                 result.Add(tokens[index]);
                 index++;
@@ -539,6 +583,7 @@ namespace DopaScript
             int index = 0;
             do
             {
+                bool isd;
                 List<Tokenizer.Token> currentParameter = new List<Tokenizer.Token>();
                 int openParentheses = 0;
                 do
@@ -554,7 +599,7 @@ namespace DopaScript
                     }
                     index++;
                 } while (index < tokens.Length && 
-                         (isSeparator(tokens[index])  || openParentheses != 0));
+                         (!isSeparator(tokens[index]) || openParentheses != 0));
                 parameters.Add(currentParameter.ToArray());
                 index++;
             } while (index < tokens.Length);
