@@ -9,12 +9,12 @@ namespace DopaScript
         Program _program;
         Function _currentFunction;
 
-        public Program Analyse(Tokenizer.Token[] Tokens)
+        public Program Analyse(Tokenizer.Token[] tokens)
         {
             _program = new Program();
             _currentFunction = null;
-
-            AddInstruction(Tokens);
+            var tokenWithoutComment = tokens.Where(t => t.TokenType != Tokenizer.TokenType.Comment).ToArray();
+            AddInstruction(tokenWithoutComment);
 
             return _program;
         }
@@ -183,7 +183,7 @@ namespace DopaScript
             _program.Functions.Add(function);
 
             Tokenizer.Token[] tokensParameters = GetTokensBetweenParentheses(Tokens, index + 2);
-            Tokenizer.Token[][] parameters = SplitTokens(tokensParameters, t => t.TokenName != Tokenizer.TokenName.ParameterSeparation);
+            Tokenizer.Token[][] parameters = SplitTokens(tokensParameters, t => t.TokenName == Tokenizer.TokenName.ParameterSeparation);
             function.ParametersCount = parameters.Length;
             int variableIndex = 0;
             foreach (Tokenizer.Token[] parameter in parameters)
@@ -286,7 +286,7 @@ namespace DopaScript
             instructionFunction.FunctionName = Tokens[index].Value;
 
             Tokenizer.Token[] tokensParametersBloc = GetTokensBetweenParentheses(Tokens, index + 1);
-            Tokenizer.Token[][] tokensParameters = SplitTokens(tokensParametersBloc, t => t.TokenName != Tokenizer.TokenName.ParameterSeparation);
+            Tokenizer.Token[][] tokensParameters = SplitTokens(tokensParametersBloc, t => t.TokenName == Tokenizer.TokenName.ParameterSeparation);
 
             foreach (Tokenizer.Token[] tokensParameter in tokensParameters)
             {

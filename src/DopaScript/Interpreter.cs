@@ -48,7 +48,7 @@ namespace DopaScript
             _program = syntaxAnalyser.Analyse(tokens);
         }
 
-        public void Execute()
+        public Value Execute()
         {
             _globalVariables = new Value[_program.Variables.Count];
             for (int i = 0; i < _globalVariables.Length; i++)
@@ -59,8 +59,13 @@ namespace DopaScript
 
             foreach (Instruction instruction in _program.Instructions)
             {
-                ExecuteInstruction(instruction);
+                InstructionResult result = ExecuteInstruction(instruction);
+                if(result != null && result.Return)
+                {
+                    return result.Value;
+                }
             }
+            return null;
         }
 
         class InstructionResult
@@ -307,7 +312,7 @@ namespace DopaScript
                     foreach(Instruction blocInstruction in instructionCondition.BlocInstructions[i])
                     {
                         var result = ExecuteInstruction(blocInstruction);
-                        if(result.Return)
+                        if(result != null && result.Return)
                         {
                             return result;
                         }

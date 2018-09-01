@@ -1,52 +1,42 @@
 ﻿using DopaScript;
 using System;
+using System.IO;
 
 namespace Test
 {
     class Program
     {
-        static string testSource =
-@"
-var i, j = 0;
-
-for(i = 0;i < 20; i += 2)
-{
-    print(i);
-}
-
-";
-        //@"
-        //function PrintText(textToPrint)
-        //{
-        //    var intermediateVar;
-        //    intermediateVar = textToPrint;
-        //    print(intermediateVar);
-        //}
-        //
-        //function ReadText()
-        //{
-        //    return read();
-        //}
-        //
-        //if((13 - 5) * 2 == 16)
-        //{
-        //    PrintText(1);
-        //}
-        //else
-        //{
-        //    PrintText(0);
-        //}
-        //
-        //var line;
-        //line = ReadText();
-        //PrintText(line);
-        //";
-
         static void Main(string[] args)
         {
-            Interpreter interpreter = new Interpreter();
-            interpreter.Parse(testSource);
-            interpreter.Execute();
+            bool testOk = true;
+            DirectoryInfo dir = new DirectoryInfo("Sources");
+
+            foreach (FileInfo file in dir.GetFiles("*.txt"))
+            {
+                string source = File.ReadAllText(file.FullName);
+                Interpreter interpreter = new Interpreter();
+                interpreter.Parse(source);
+                Value value = interpreter.Execute();
+                if(value.Type == Value.DataType.Boolean && value.BoolValue)
+                {
+                    Console.WriteLine(Path.GetFileNameWithoutExtension(file.Name).PadRight(30, '.') + " OK");
+                }
+                else
+                {
+                    Console.WriteLine(Path.GetFileNameWithoutExtension(file.Name).PadRight(30, '.') + " FAIL");
+                    testOk = false; 
+                }
+            }
+
+            if (testOk)
+            {
+                Console.WriteLine("OK");
+            }
+            else
+            {
+                Console.WriteLine("FAIL");
+            }
+
             Console.ReadKey();
         }
     }

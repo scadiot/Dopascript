@@ -51,7 +51,7 @@ namespace DopaScript
                 {
                     token = TokenizeIndentifierOrKeyword(source, ref index);
                 }
-                else if (source[index] == '/' && source.Length < index + 1 && source[index + 1] == '/')
+                else if (source[index] == '/' && index + 1 < source.Length && source[index + 1] == '/')
                 {
                     TokenizeComment(source, ref index);
                 }

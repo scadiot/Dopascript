@@ -1,0 +1,13 @@
+var i, j = 2;
+var finalValue;
+
+if(i + j == 4)
+{
+	finalValue = true;
+}
+else
+{
+	finalValue = false;
+}
+
+return finalValue;

@@ -55,4 +55,8 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>mkdir $(ProjectDir)$(OutDir)Sources
+copy $(ProjectDir)Sources\* $(ProjectDir)$(OutDir)Sources\*</PostBuildEvent>
+  </PropertyGroup>
 </Project>
