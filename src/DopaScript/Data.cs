@@ -5,13 +5,19 @@ namespace DopaScript
 {
     public class Value
     {
-        public enum DataType { String, Numeric, Boolean }
+        public enum DataType { Undefined, String, Numeric, Boolean, DateTime, Array }
 
         public DataType Type { get; set; }
 
         public decimal NumericValue { get; set; }
         public bool BoolValue { get; set; }
         public string StringValue { get; set; }
+        public DateTime DateTimeValue { get; set; }
+
+        public Value()
+        {
+            Type = DataType.Undefined;
+        }
     }
 
     class Variable
@@ -177,5 +183,10 @@ namespace DopaScript
 
         public OperatorType Type { get; set; }
         public string VariableName { get; set; }
+    }
+
+    class InstructionNegation : Instruction
+    {
+        public Instruction Instruction { get; set; }
     }
 }

@@ -84,7 +84,7 @@ namespace DopaScript
             {
                 return AnalyseReturn(tokens, index, out tokenCount);
             }
-            else if ((tokens.Length > index + 1 && tokens[index + 1].TokenType == Tokenizer.TokenType.Operator))
+            else if (IsOperation(tokens, index))
             {
                 return AnalyseOperation(tokens, index, out tokenCount);
             }
@@ -103,6 +103,10 @@ namespace DopaScript
             else if (tokens[index].TokenName == Tokenizer.TokenName.For)
             {
                 return AnalyseFor(tokens, index, out tokenCount);
+            }
+            else if (tokens[index].TokenName == Tokenizer.TokenName.Negation)
+            {
+                return AnalyseNegation(tokens, index, out tokenCount);
             }
 
             return null;
@@ -151,7 +155,7 @@ namespace DopaScript
             {
                 tokenCount++;
 
-                Tokenizer.Token[] instructionTokens = GetTokensTo(Tokens, index + tokenCount, Tokenizer.TokenName.LineEnd);
+                Tokenizer.Token[] instructionTokens = GetTokensTo(Tokens, index + tokenCount, (t) => t.TokenName == Tokenizer.TokenName.LineEnd);
                 
                 foreach(Variable variable in variables)
                 {
@@ -234,7 +238,7 @@ namespace DopaScript
             instructionAssignment.Type = TokenNameToAssignmentType[Tokens[index + 1].TokenName];
 
             int tokenCount_rightValue = 0;
-            Tokenizer.Token[] instructionTokens = GetTokensTo(Tokens, index + 2, Tokenizer.TokenName.LineEnd);
+            Tokenizer.Token[] instructionTokens = GetTokensTo(Tokens, index + 2, (t) => t.TokenName == Tokenizer.TokenName.LineEnd);
             instructionAssignment.Instruction = AnalyseInstruction(instructionTokens, 0, out tokenCount_rightValue);
 
             tokenCount = 3 + instructionTokens.Length;
@@ -265,6 +269,10 @@ namespace DopaScript
             {
                 result.Value.Type = Value.DataType.Boolean;
                 result.Value.BoolValue = true;
+            }
+            else if (Tokens[0].TokenName == Tokenizer.TokenName.Undefined)
+            {
+                result.Value.Type = Value.DataType.Undefined;
             }
 
             tokenCount = 1;
@@ -304,7 +312,7 @@ namespace DopaScript
             InstructionReturn instructionReturn = new InstructionReturn();
 
             int tokenCount_rightValue = 0;
-            Tokenizer.Token[] instructionTokens = GetTokensTo(Tokens, index + 1, Tokenizer.TokenName.LineEnd);
+            Tokenizer.Token[] instructionTokens = GetTokensTo(Tokens, index + 1, (t) => t.TokenName == Tokenizer.TokenName.LineEnd);
             instructionReturn.ValueInstruction = AnalyseInstruction(instructionTokens, 0, out tokenCount_rightValue);
 
             tokenCount = 2 + instructionTokens.Length;
@@ -526,15 +534,48 @@ namespace DopaScript
             return instructionUnaryOperator;
         }
 
-        Tokenizer.Token[] GetTokensTo(Tokenizer.Token[] tokens, int index, Tokenizer.TokenName tokenToFind)
+        Instruction AnalyseNegation(Tokenizer.Token[] tokens, int index, out int tokenCount)
+        {
+            InstructionNegation instructionNegation = new InstructionNegation();
+
+            Tokenizer.Token[] subTokens = GetTokensTo(tokens, 1, (t) => t.TokenType == Tokenizer.TokenType.Operator || t.TokenName == Tokenizer.TokenName.LineEnd);
+   
+            int tc = 0;
+            instructionNegation.Instruction = AnalyseInstruction(subTokens, 0, out tc);
+
+            tokenCount = subTokens.Length + 1;
+            return instructionNegation;
+        }
+
+        Tokenizer.Token[] GetTokensTo(Tokenizer.Token[] tokens, int index, Func<Tokenizer.Token, bool>  tokenToFind)
         {
             List<Tokenizer.Token> result = new List<Tokenizer.Token>();
-            while (index < tokens.Length && tokens[index].TokenName != tokenToFind)
+            int openParentheses = 0;
+            while ((index < tokens.Length && !tokenToFind(tokens[index])) || openParentheses > 0)
             {
+                if (tokens[index].TokenName == Tokenizer.TokenName.ParenthesesOpen)
+                {
+                    openParentheses++;
+                }
+                else if (tokens[index].TokenName == Tokenizer.TokenName.ParenthesesClose)
+                {
+                    openParentheses--;
+                }
+
                 result.Add(tokens[index]);
                 index++;
             }
             return result.ToArray();
+        }
+
+        bool IsOperation(Tokenizer.Token[] tokens, int index)
+        {
+            if(tokens[0].TokenType != Tokenizer.TokenType.Indentifier && tokens[0].TokenName != Tokenizer.TokenName.Negation && tokens[0].TokenType != Tokenizer.TokenType.Literal)
+            {
+                return false;
+            }
+            var tokensToOperator = GetTokensTo(tokens, index, (t) => t.TokenType == Tokenizer.TokenType.Operator || t.TokenName == Tokenizer.TokenName.LineEnd);
+            return tokensToOperator.Length < tokens.Length && tokens[tokensToOperator.Length].TokenType == Tokenizer.TokenType.Operator;
         }
 
         Tokenizer.Token[] GetTokensBetweenParentheses(Tokenizer.Token[] tokens, int index)
@@ -583,7 +624,6 @@ namespace DopaScript
             int index = 0;
             do
             {
-                bool isd;
                 List<Tokenizer.Token> currentParameter = new List<Tokenizer.Token>();
                 int openParentheses = 0;
                 do

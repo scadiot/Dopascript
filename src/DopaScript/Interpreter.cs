@@ -32,6 +32,7 @@ namespace DopaScript
             InstructionExecutors.Add(typeof(InstructionWhile), ExecuteInstructionWhile);
             InstructionExecutors.Add(typeof(InstructionUnaryOperator), ExecuteInstructionUnaryOperator);
             InstructionExecutors.Add(typeof(InstructionFor), ExecuteInstructionFor);
+            InstructionExecutors.Add(typeof(InstructionNegation), ExecuteInstructionNegation);
         }
 
         public void AddFunction(string name, FunctionDelegate function)
@@ -209,18 +210,27 @@ namespace DopaScript
         {
             InstructionOperation instructionOperation = instruction as InstructionOperation;
 
-            List<Value> values = new List<Value>();
-            foreach(Instruction valueInstruction in instructionOperation.ValuesInstructions)
-            {
-                InstructionResult r = ExecuteInstruction(valueInstruction);
-                values.Add(r.Value);
-            }
+            InstructionResult r = ExecuteInstruction(instructionOperation.ValuesInstructions.First());
+            Value leftValue = CopyValue(r.Value);
 
-            Value leftValue = CopyValue(values.First());
             for(int i = 0;i < instructionOperation.Operators.Count;i++)
             {
                 InstructionOperation.OperatorType ope = instructionOperation.Operators[i];
-                Value rightValue = values[i + 1];
+
+
+                if (ope == InstructionOperation.OperatorType.And && leftValue.BoolValue == false)
+                {
+                    break;
+                }
+
+                if (ope == InstructionOperation.OperatorType.Or && leftValue.BoolValue == true)
+                {
+                    break;
+                }
+
+                r = ExecuteInstruction(instructionOperation.ValuesInstructions[i + 1]);
+                Value rightValue = CopyValue(r.Value);
+
                 switch (ope)
                 {
                     case InstructionOperation.OperatorType.Addition:
@@ -256,6 +266,9 @@ namespace DopaScript
                             case Value.DataType.Boolean:
                                 leftValue.BoolValue = leftValue.BoolValue == rightValue.BoolValue;
                                 break;
+                            case Value.DataType.Undefined:
+                                leftValue.BoolValue = rightValue.Type == Value.DataType.Undefined;
+                                break;
                         }    
                         leftValue.Type = Value.DataType.Boolean;
                         break;
@@ -270,6 +283,9 @@ namespace DopaScript
                                 break;
                             case Value.DataType.Boolean:
                                 leftValue.BoolValue = leftValue.BoolValue != rightValue.BoolValue;
+                                break;
+                            case Value.DataType.Undefined:
+                                leftValue.BoolValue = rightValue.Type != Value.DataType.Undefined;
                                 break;
                         }
                         leftValue.Type = Value.DataType.Boolean;
@@ -405,6 +421,23 @@ namespace DopaScript
             
 
             return null;
+        }
+
+        InstructionResult ExecuteInstructionNegation(Instruction instruction)
+        {
+            InstructionNegation instructionNegation = instruction as InstructionNegation;
+
+            Value value = ExecuteInstruction(instructionNegation.Instruction).Value;
+            Value resultValue = new Value()
+            {
+                Type = Value.DataType.Boolean,
+                BoolValue = !value.BoolValue
+            };
+
+            return new InstructionResult()
+            {
+                Value = resultValue
+            };
         }
 
         Value GetVariableValue(Variable variable)

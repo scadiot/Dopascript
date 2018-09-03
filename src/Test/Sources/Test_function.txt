@@ -1,6 +1,6 @@
-function testFunction(val1, val2, val3)
+function testFunction(val1, val2)
 {
-	return val1 + val2 == val3;
+	return val1 + val2;
 }
 
-return testFunction(1, 1, 2);
+return testFunction(1, 1) == 2;

@@ -13,7 +13,7 @@ namespace DopaScript
                                    TestEqual, TestNotEqual, GreaterThan, LessThan, GreaterThanOrEqual, LessThanOrEqual,
                                    Increment, Decrement, Negation,
                                    Assignment, AssignmentAddition, AssignmentSubstraction, AssignmentMultiplication, AssignmentDivision,
-                                   String, Number, True, False,
+                                   String, Number, True, False, Undefined,
                                    Comment
         }
 
@@ -244,8 +244,9 @@ namespace DopaScript
             { "/=", TokenType.Assignment },
             { "*=", TokenType.Assignment },
 
-            { "true",  TokenType.Literal },
-            { "false", TokenType.Literal },
+            { "true",      TokenType.Literal },
+            { "false",     TokenType.Literal },
+            { "undefined", TokenType.Literal },
 
             { "if",       TokenType.Keyword },
             { "else",     TokenType.Keyword },
@@ -295,8 +296,9 @@ namespace DopaScript
             { "/=", TokenName.AssignmentDivision },
             { "*=", TokenName.AssignmentMultiplication },
 
-            { "true",  TokenName.True },
-            { "false", TokenName.False },
+            { "true",      TokenName.True },
+            { "false",     TokenName.False },
+            { "undefined", TokenName.Undefined },
 
             { "if",       TokenName.Condition },
             { "else",     TokenName.Else },

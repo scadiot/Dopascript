@@ -11,6 +11,10 @@ namespace Test
             bool testOk = true;
             DirectoryInfo dir = new DirectoryInfo("Sources");
 
+            //Interpreter interpreter = new Interpreter();
+            //interpreter.Parse("var k = true;var ope6 = !k == false;print(ope6);");
+            //Value value = interpreter.Execute();
+
             foreach (FileInfo file in dir.GetFiles("*.txt"))
             {
                 string source = File.ReadAllText(file.FullName);
@@ -27,7 +31,7 @@ namespace Test
                     testOk = false; 
                 }
             }
-
+            
             if (testOk)
             {
                 Console.WriteLine("OK");

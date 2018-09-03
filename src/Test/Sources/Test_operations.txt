@@ -5,4 +5,10 @@ var ope2 = 20 % 7 == 6;
 var ope3 = true && false == false;
 var ope4 = true || false;
 
-return ope1 && ope2 && ope3 && ope4;
+var j;
+var ope5 = j == undefined;
+
+var k = true;
+var ope6 = !k == false;
+
+return ope1 && ope2 && ope3 && ope4 && ope5 && ope6;
