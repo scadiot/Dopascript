@@ -1,0 +1,9 @@
+var date1 = date();
+sleep(100);
+var date2 = date();
+var ellapsedTime = date2 - date1;
+var milliseconds = timespanTotalMilliseconds(ellapsedTime);
+
+var ope1 = milliseconds > 100;
+
+return ope1;

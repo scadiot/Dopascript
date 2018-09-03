@@ -5,5 +5,20 @@ for(i = 0;i < 20; i += 2)
 {
   j++;
 }
+var ope1 = j == 10;
 
-return j == 10;
+
+j = 0;
+for(i = 0;i < 10 + 10;i++)
+{
+  if(i >= 15)
+  {
+    break;
+  }
+  j++;
+}
+
+var ope2 = j == 15;
+
+
+return ope1 && ope2;

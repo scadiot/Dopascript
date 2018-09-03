@@ -5,7 +5,7 @@ namespace DopaScript
 {
     public class Value
     {
-        public enum DataType { Undefined, String, Numeric, Boolean, DateTime, Array }
+        public enum DataType { Undefined, String, Numeric, Boolean, DateTime, TimeSpan, Array, Structure }
 
         public DataType Type { get; set; }
 
@@ -13,6 +13,9 @@ namespace DopaScript
         public bool BoolValue { get; set; }
         public string StringValue { get; set; }
         public DateTime DateTimeValue { get; set; }
+        public TimeSpan TimeSpanValue { get; set; }
+        public List<Value> Array { get; set; }
+        public Dictionary<string, Value> Structure { get; set; }
 
         public Value()
         {
@@ -26,6 +29,12 @@ namespace DopaScript
         public bool Reference { get; set; }
         public bool Global { get; set; }
         public int Index { get; set; }
+    }
+
+    class PathParameter
+    {
+        public Instruction IndexInstruction { get; set; }
+        public string Member { get; set; }
     }
 
     class Program
@@ -61,6 +70,8 @@ namespace DopaScript
     {
         public int Line { get; set; }
         public int Position { get; set; }
+
+        public List<PathParameter> Path { get; set; }
     }
 
     class InstructionAssignment : Instruction
@@ -70,6 +81,11 @@ namespace DopaScript
         public string VariableName { get; set; }
         public Instruction Instruction { get; set; }
         public AssignmentType Type { get; set; }
+
+        public InstructionAssignment()
+        {
+
+        }
     }
 
     class InstructionOperation : Instruction
@@ -172,6 +188,11 @@ namespace DopaScript
     class InstructionVariableValue : Instruction
     {
         public string VariableName { get; set; }
+
+        public InstructionVariableValue()
+        {
+
+        }
     }
 
     class InstructionUnaryOperator : Instruction

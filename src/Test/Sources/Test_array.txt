@@ -1,0 +1,6 @@
+var array = arrayNew();
+arrayPush(array, 6);
+arrayPush(array, 8);
+arrayPush(array, 3);
+array[0] = 5;
+return array[0] + array[2]== array[1];

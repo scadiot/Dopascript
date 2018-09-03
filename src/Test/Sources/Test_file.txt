@@ -1,0 +1,7 @@
+var files = getFiles("sources");
+var i;
+for(i = 0; i < arrayLength(files);i++)
+{
+	//print(files[i].Name);
+}
+return true;

@@ -1,0 +1,158 @@
+var blocSize = 10;
+var world;
+var tetrominos;
+var currentTetromino;
+var iteration;
+
+function Init()
+{
+	var i;
+
+	DrawBackground();
+	
+	world = arrayNew();
+	for (i = 0;i < 10 * 22;i++)
+	{
+		arrayPush(world, 0);
+	}
+	
+	tetrominos = arrayNew();
+	
+	var tetromino_i = arrayNew();
+	arrayPush(tetromino_i, arrayNew(0, 0, 0, 0,  1, 1, 1, 1,  0, 0, 0, 0,  0, 0, 0, 0));
+	arrayPush(tetromino_i, arrayNew(0, 0, 1, 0,  0, 0, 1, 0,  0, 0, 1, 0,  0, 0, 1, 0));
+	arrayPush(tetromino_i, arrayNew(0, 0, 0, 0,  0, 0, 0, 0,  1, 1, 1, 1,  0, 0, 0, 0));
+	arrayPush(tetromino_i, arrayNew(0, 1, 0, 0,  0, 1, 0, 0,  0, 1, 0, 0,  0, 1, 0, 0));
+	arrayPush(tetrominos, tetromino_i);
+	
+	currentTetromino = structureNew();
+	currentTetromino.x = 3;
+	currentTetromino.y = 0;
+	currentTetromino.tetromino_index = 0;
+	currentTetromino.orientation = 0;
+	
+	iteration = 0;
+}
+
+function Update()
+{
+	if(iteration % 10 == 0)
+	{
+		currentTetromino.y++;
+	}
+	
+	if(isKeyPressed(32))
+	{
+		currentTetromino.orientation = (currentTetromino.orientation + 1) % 4;
+	}
+	
+	iteration++;
+}
+
+function DrawBloc(x, y, num)
+{
+	drawImage(imageBlocs, x * blocSize, y * blocSize, blocSize, blocSize, num * blocSize, 0);
+}
+
+function DrawBackground()
+{
+	var i;
+	
+	for(i = 0;i < 32;i++)
+	{
+		DrawBloc(i, 0, 0);
+		DrawBloc(i, 23, 0);
+	}
+	
+	for(i = 1;i < 23;i++)
+	{
+		DrawBloc(0, i, 0);
+	}
+	
+	var j;
+	
+	for(j = 11;j < 32;j++)
+	{
+		for(i = 1;i < 23;i++)
+		{
+			DrawBloc(j , i, 0);
+		}
+	}
+}
+
+function DrawCurrentTetromino()
+{
+	var x, y, blocValue;
+	for(y = 0;y < 4;y++)
+	{
+		for(x = 0;x < 4;x++)
+		{
+			blocValue = tetrominos[currentTetromino.tetromino_index][currentTetromino.orientation][y * 4 + x];
+			if(blocValue != 0)
+			{
+				DrawBloc(currentTetromino.x + x + 1, currentTetromino.y + y + 1, blocValue);
+			}
+		}
+	}
+}
+
+function Draw()
+{
+	fillRectangle("SkyBlue", 1 * blocSize, 1 * blocSize, 10 * blocSize, 22 * blocSize);
+	DrawCurrentTetromino();
+	
+	flip();
+}
+
+
+var imageBlocs = loadImage("blocs.png");
+
+var sprite = structureNew();
+sprite.x = 0;
+sprite.y = 0;
+sprite.direction = structureNew();
+sprite.direction.x = 0;
+sprite.direction.y = 0;
+
+var lastFlip = date();
+var millisecond;
+
+Init();
+
+while(true)
+{
+	if(isKeyPressed(40))
+	{
+		sprite.direction.y = 1;
+	}
+	else if(isKeyPressed(38))
+	{
+		sprite.direction.y = -1;
+	}
+	else
+	{
+		sprite.direction.y = 0;
+	}
+	
+	if(isKeyPressed(37))
+	{
+		sprite.direction.x = -1;
+	}
+	else if(isKeyPressed(39))
+	{
+		sprite.direction.x = 1;
+	}
+	else
+	{
+		sprite.direction.x = 0;
+	}
+
+	Update();
+	Draw();
+	
+	millisecond = timespanTotalMilliseconds(date() - lastFlip);
+	sleep(100 - millisecond);
+	
+	lastFlip = date();
+	
+}

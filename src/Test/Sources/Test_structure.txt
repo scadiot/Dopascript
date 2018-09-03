@@ -1,0 +1,18 @@
+var user = structureNew();
+user.name = "bill";
+user.age = 34;
+user.size = 1.85;
+var ope1 = user.age < 50 && user.size > 1.75 && user.name == "bill";
+
+function getUser()
+{
+	var user = structureNew();
+	user.age = 25;
+	return user;
+}
+var ope2 = getUser().age == 25;
+
+user.age++;
+var ope3 = user.age == 35;
+
+return ope1 && ope2 && ope3;

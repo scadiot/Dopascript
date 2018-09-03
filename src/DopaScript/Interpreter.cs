@@ -33,6 +33,7 @@ namespace DopaScript
             InstructionExecutors.Add(typeof(InstructionUnaryOperator), ExecuteInstructionUnaryOperator);
             InstructionExecutors.Add(typeof(InstructionFor), ExecuteInstructionFor);
             InstructionExecutors.Add(typeof(InstructionNegation), ExecuteInstructionNegation);
+            InstructionExecutors.Add(typeof(InstructionBreak), ExecuteInstructionBreak);
         }
 
         public void AddFunction(string name, FunctionDelegate function)
@@ -74,10 +75,14 @@ namespace DopaScript
             public InstructionResult()
             {
                 Return = false;
+                Break = false;
+                Continue = false;
             }
 
             public Value Value { get; set; }
+            public bool Break { get; set; }
             public bool Return { get; set; }
+            public bool Continue { get; set; }
         }
 
         InstructionResult ExecuteInstruction(Instruction instruction)
@@ -97,6 +102,28 @@ namespace DopaScript
             Value value = ExecuteInstruction(instructionAssignment.Instruction).Value;
 
             Value variableValue = GetVariableValue(variable);
+
+            foreach(PathParameter parameter in instructionAssignment.Path)
+            {
+                if(variableValue.Type == Value.DataType.Array)
+                {
+                    Value indexValue = ExecuteInstruction(parameter.IndexInstruction).Value;
+                    variableValue = variableValue.Array[(int)indexValue.NumericValue];
+                }
+                else if (variableValue.Type == Value.DataType.Structure)
+                {
+                    if(variableValue.Structure.ContainsKey(parameter.Member))
+                    {
+                        variableValue = variableValue.Structure[parameter.Member];
+                    }
+                    else
+                    {
+                        Value newVariableValue = new Value();
+                        variableValue.Structure.Add(parameter.Member, newVariableValue);
+                        variableValue = newVariableValue;
+                    }
+                }
+            }
 
             switch (instructionAssignment.Type)
             {
@@ -159,19 +186,14 @@ namespace DopaScript
                     _heap.Add(new Value());
                 }
 
-                foreach (var functionInstruction in _currentFunction.Instructions)
-                {
-                    InstructionResult r = ExecuteInstruction(functionInstruction);
-                    if(r != null && r.Return)
-                    {
-                        result.Value = r.Value;
-                    }
-                }
+                result = ExecuteBloc(_currentFunction.Instructions.ToArray());
 
                 _currentFunction = previousFunction;
 
                 _heap.RemoveRange(_heap.Count - instructionFunction.Parameters.Count, instructionFunction.Parameters.Count);
             }
+
+            result.Value = ResolvePath(result.Value, instructionFunction.Path);
 
             return result;
         }
@@ -182,6 +204,8 @@ namespace DopaScript
 
             Variable variable = GetVariableByName(instructionVariableValue.VariableName);
             Value value = GetVariableValue(variable);
+
+            value = ResolvePath(value, instructionVariableValue.Path);
 
             return new InstructionResult()
             {
@@ -234,10 +258,33 @@ namespace DopaScript
                 switch (ope)
                 {
                     case InstructionOperation.OperatorType.Addition:
-                        leftValue.NumericValue = leftValue.NumericValue + rightValue.NumericValue;
+                        if (leftValue.Type == Value.DataType.String && rightValue.Type == Value.DataType.String)
+                        {
+                            leftValue.StringValue = leftValue.StringValue + rightValue.StringValue;
+                        }
+                        else if (leftValue.Type == Value.DataType.Numeric && rightValue.Type == Value.DataType.String)
+                        {
+                            leftValue.StringValue = leftValue.NumericValue.ToString() + rightValue.StringValue;
+                        }
+                        else if (leftValue.Type == Value.DataType.String && rightValue.Type == Value.DataType.Numeric)
+                        {
+                            leftValue.StringValue = leftValue.StringValue + rightValue.NumericValue.ToString();
+                        }
+                        else if (leftValue.Type == Value.DataType.Numeric)
+                        {
+                            leftValue.NumericValue = leftValue.NumericValue + rightValue.NumericValue;
+                        }
                         break;
                     case InstructionOperation.OperatorType.Substraction:
-                        leftValue.NumericValue = leftValue.NumericValue - rightValue.NumericValue;
+                        if (leftValue.Type == Value.DataType.Numeric)
+                        {
+                            leftValue.NumericValue = leftValue.NumericValue - rightValue.NumericValue;
+                        }
+                        else if (leftValue.Type == Value.DataType.DateTime && rightValue.Type == Value.DataType.DateTime)
+                        {
+                            leftValue.Type = Value.DataType.TimeSpan;
+                            leftValue.TimeSpanValue = leftValue.DateTimeValue - rightValue.DateTimeValue;
+                        }
                         break;
                     case InstructionOperation.OperatorType.Multiplication:
                         leftValue.NumericValue = leftValue.NumericValue * rightValue.NumericValue;
@@ -320,40 +367,20 @@ namespace DopaScript
         {
             InstructionCondition instructionCondition = instruction as InstructionCondition;
 
-            bool codeExecuted = false;
             for (int i = 0;i < instructionCondition.TestInstructions.Count;i++)
             {
                 if(ExecuteInstruction(instructionCondition.TestInstructions[i]).Value.BoolValue)
                 {
-                    foreach(Instruction blocInstruction in instructionCondition.BlocInstructions[i])
-                    {
-                        var result = ExecuteInstruction(blocInstruction);
-                        if(result != null && result.Return)
-                        {
-                            return result;
-                        }
-                    }
-                    codeExecuted = true;
-                    break;
+                    return ExecuteBloc(instructionCondition.BlocInstructions[i].ToArray());
                 }
             }
 
-            if(!codeExecuted && instructionCondition.TestInstructions.Count != instructionCondition.BlocInstructions.Count)
+            if(instructionCondition.TestInstructions.Count != instructionCondition.BlocInstructions.Count)
             {
-                foreach (Instruction blocInstruction in instructionCondition.BlocInstructions.Last())
-                {
-                    var result = ExecuteInstruction(blocInstruction);
-                    if (result != null && result.Return)
-                    {
-                        return result;
-                    }
-                }
+                return ExecuteBloc(instructionCondition.BlocInstructions.Last().ToArray());
             }
 
-            return new InstructionResult()
-            {
-                Return = false
-            };
+            return new InstructionResult();
         }
 
         InstructionResult ExecuteInstructionWhile(Instruction instruction)
@@ -386,21 +413,16 @@ namespace DopaScript
 
             while (ExecuteInstruction(instructionFor.TestInstruction).Value.BoolValue)
             {
-                foreach (Instruction blocInstruction in instructionFor.BlocInstruction)
+                InstructionResult result = ExecuteBloc(instructionFor.BlocInstruction.ToArray());
+                if (result != null && (result.Return || result.Break))
                 {
-                    var result = ExecuteInstruction(blocInstruction);
-                    if (result != null && result.Return)
-                    {
-                        return result;
-                    }
+                    return result;
                 }
+
                 ExecuteInstruction(instructionFor.IncrementInstruction);
             }
 
-            return new InstructionResult()
-            {
-                Return = false
-            };
+            return new InstructionResult();
         }
 
         InstructionResult ExecuteInstructionUnaryOperator(Instruction instruction)
@@ -409,18 +431,29 @@ namespace DopaScript
 
             Variable variable = GetVariableByName(instructionUnaryOperator.VariableName);
 
+            Value variableValue = GetVariableValue(variable);
+            variableValue = ResolvePath(variableValue, instructionUnaryOperator.Path);
+
             switch (instructionUnaryOperator.Type)
             {
                 case InstructionUnaryOperator.OperatorType.Increment:
-                    GetVariableValue(variable).NumericValue++;
+                    variableValue.NumericValue++;
                     break;
                 case InstructionUnaryOperator.OperatorType.Decrement:
-                    GetVariableValue(variable).NumericValue--;
+                    variableValue.NumericValue--;
                     break;
             }
             
 
-            return null;
+            return new InstructionResult();
+        }
+
+        InstructionResult ExecuteInstructionBreak(Instruction instruction)
+        {
+            return new InstructionResult()
+            {
+                Break = true
+            };
         }
 
         InstructionResult ExecuteInstructionNegation(Instruction instruction)
@@ -438,6 +471,19 @@ namespace DopaScript
             {
                 Value = resultValue
             };
+        }
+
+        InstructionResult ExecuteBloc(Instruction[] instructions)
+        {
+            foreach (Instruction blocInstruction in instructions)
+            {
+                var result = ExecuteInstruction(blocInstruction);
+                if (result != null && (result.Return || result.Break))
+                {
+                    return result;
+                }
+            }
+            return new InstructionResult();
         }
 
         Value GetVariableValue(Variable variable)
@@ -465,6 +511,23 @@ namespace DopaScript
             return _program.Variables.FirstOrDefault(v => v.Name == name);
         }
 
+        Value ResolvePath(Value value, List<PathParameter> parameters)
+        {
+            foreach (PathParameter parameter in parameters)
+            {
+                if (value.Type == Value.DataType.Array)
+                {
+                    Value indexValue = ExecuteInstruction(parameter.IndexInstruction).Value;
+                    value = value.Array[(int)indexValue.NumericValue];
+                }
+                else if (value.Type == Value.DataType.Structure)
+                {
+                     value = value.Structure[parameter.Member];
+                }
+            }
+            return value;
+        }
+
         Value CopyValue(Value value)
         {
             Value newValue = new Value();
@@ -472,6 +535,10 @@ namespace DopaScript
             newValue.BoolValue = value.BoolValue;
             newValue.NumericValue = value.NumericValue;
             newValue.StringValue = value.StringValue;
+            newValue.Array = value.Array;
+            newValue.Structure = value.Structure;
+            newValue.DateTimeValue = value.DateTimeValue;
+            newValue.TimeSpanValue = value.TimeSpanValue;
             return newValue;
         }
 
@@ -481,6 +548,10 @@ namespace DopaScript
             destination.BoolValue = value.BoolValue;
             destination.NumericValue = value.NumericValue;
             destination.StringValue = value.StringValue;
+            destination.Array = value.Array;
+            destination.Structure = value.Structure;
+            destination.DateTimeValue = value.DateTimeValue;
+            destination.TimeSpanValue = value.TimeSpanValue;
         }
     }
 }

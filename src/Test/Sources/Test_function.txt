@@ -1,6 +1,14 @@
-function testFunction(val1, val2)
+function testFunction1(val1, val2)
 {
 	return val1 + val2;
 }
 
-return testFunction(1, 1) == 2;
+var ope1 = testFunction1(1, 1) == 2;
+
+function testFunction2(val1, val2)
+{
+	return val1 == val2;
+}
+var ope2 = !testFunction2(1, 2);
+
+return ope1 && ope2;

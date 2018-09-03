@@ -8,7 +8,7 @@ namespace DopaScript
         public enum TokenType { Indentifier, Keyword, Separator, Operator, UnaryOperator, Assignment, Literal, Comment }
         public enum TokenName { None,
                                    Condition, While, Do, For, Break, Return, Function, VariableDeclaration, Reference, Else,
-                                   BlocOpen, BlocClose, ParenthesesOpen, ParenthesesClose, ParameterSeparation, SquareBracketOpen, SquareBracketClose, LineEnd,
+                                   BlocOpen, BlocClose, ParenthesesOpen, ParenthesesClose, ParameterSeparation, SquareBracketOpen, SquareBracketClose, LineEnd, Dot,
                                    Addition, Substraction, Multiplication, Division, Modulo, Or, And,
                                    TestEqual, TestNotEqual, GreaterThan, LessThan, GreaterThanOrEqual, LessThanOrEqual,
                                    Increment, Decrement, Negation,
@@ -101,7 +101,7 @@ namespace DopaScript
             string value = "";
 
             index++;
-            do
+            while (source[index] != '"') 
             {
                 if(source[index] == '\\')
                 {
@@ -110,7 +110,7 @@ namespace DopaScript
                 }
                 value += source[index];
                 index++;
-            } while (source[index] != '"');
+            } 
             index++;
 
             return new Token()
@@ -178,12 +178,24 @@ namespace DopaScript
                 index++;
             } while (index < source.Length && IsDigitOrDot(source[index]));
 
-            return new Token()
+            if(value == ".")
             {
-                Value = value,
-                TokenType = TokenType.Literal,
-                TokenName = TokenName.Number
-            };
+                return new Token()
+                {
+                    Value = value,
+                    TokenType = TokenType.Separator,
+                    TokenName = TokenName.Dot
+                };
+            }
+            else
+            {
+                return new Token()
+                {
+                    Value = value,
+                    TokenType = TokenType.Literal,
+                    TokenName = TokenName.Number
+                };
+            }
         }
 
         bool IsLetter(char c)
@@ -198,7 +210,7 @@ namespace DopaScript
 
         bool IsDigitOrDot(char c)
         {
-            return char.IsLetterOrDigit(c) || c == '.';
+            return char.IsDigit(c) || c == '.';
         }
 
         bool IsWhiteSpace(char c)
@@ -218,6 +230,7 @@ namespace DopaScript
             { "[", TokenType.Separator },
             { "]", TokenType.Separator },
             { ",", TokenType.Separator },
+            { ".", TokenType.Separator },
 
             { "+",  TokenType.Operator },
             { "-",  TokenType.Operator },
@@ -270,6 +283,7 @@ namespace DopaScript
             { "[", TokenName.SquareBracketOpen },
             { "]", TokenName.SquareBracketClose },
             { ",", TokenName.ParameterSeparation },
+            { ".", TokenName.Dot },
 
             { "+",  TokenName.Addition },
             { "-",  TokenName.Substraction },

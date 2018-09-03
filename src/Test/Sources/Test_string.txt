@@ -1,0 +1,4 @@
+var age = 25;
+var ope1 = "Bill is " + age + " years old" == "Bill is 25 years old";
+
+return ope1;

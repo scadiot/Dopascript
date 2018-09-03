@@ -11,9 +11,11 @@ namespace Test
             bool testOk = true;
             DirectoryInfo dir = new DirectoryInfo("Sources");
 
+            //string source = "function testFunction1() { return 2; } print(testFunction1() == 2);";
             //Interpreter interpreter = new Interpreter();
-            //interpreter.Parse("var k = true;var ope6 = !k == false;print(ope6);");
+            //interpreter.Parse(source);
             //Value value = interpreter.Execute();
+
 
             foreach (FileInfo file in dir.GetFiles("*.txt"))
             {
