@@ -84,7 +84,7 @@ namespace DemoGame
             CurrentKeyPressed = new HashSet<int>();
         }
 
-        public DopaScript.Value Flip(List<DopaScript.Value> values)
+        public DopaScript.Value Flip(DopaScript.FunctionCallArgs parameters)
         {
             this.Invoke(new Action(() =>
             {
@@ -94,14 +94,14 @@ namespace DemoGame
             return null;
         }
 
-        public DopaScript.Value LoadImage(List<DopaScript.Value> values)
+        public DopaScript.Value LoadImage(DopaScript.FunctionCallArgs parameters)
         {
             int imageId = 0;
 
             this.Invoke(new Action(() =>
             {
                 imageId = Images.Count;
-                Images.Add(Bitmap.FromFile(Path.Combine(SelectedGame.FullName, values[0].StringValue)));
+                Images.Add(Bitmap.FromFile(Path.Combine(SelectedGame.FullName, parameters.Values[0].StringValue)));
             }));
 
             return new DopaScript.Value()
@@ -111,28 +111,28 @@ namespace DemoGame
             };
         }
 
-        public DopaScript.Value DrawImage(List<DopaScript.Value> values)
+        public DopaScript.Value DrawImage(DopaScript.FunctionCallArgs parameters)
         {
             this.Invoke(new Action(() =>
             {
-                Image img = Images[(int)values[0].NumericValue];
-                if(values.Count == 3)
+                Image img = Images[(int)parameters.Values[0].NumericValue];
+                if(parameters.Values.Count == 3)
                 {
-                    Graphic.DrawImage(img, new Point((int)values[1].NumericValue, (int)values[2].NumericValue));
+                    Graphic.DrawImage(img, new Point((int)parameters.Values[1].NumericValue, (int)parameters.Values[2].NumericValue));
                 }
-                else if(values.Count == 7)
+                else if(parameters.Values.Count == 7)
                 {
                     Rectangle source = new Rectangle();
-                    source.X = (int)values[1].NumericValue;
-                    source.Y = (int)values[2].NumericValue;
-                    source.Width = (int)values[3].NumericValue;
-                    source.Height = (int)values[4].NumericValue;
+                    source.X = (int)parameters.Values[1].NumericValue;
+                    source.Y = (int)parameters.Values[2].NumericValue;
+                    source.Width = (int)parameters.Values[3].NumericValue;
+                    source.Height = (int)parameters.Values[4].NumericValue;
 
                     Rectangle destination = new Rectangle();
-                    destination.X = (int)values[5].NumericValue;
-                    destination.Y = (int)values[6].NumericValue;
-                    destination.Width = (int)values[3].NumericValue;
-                    destination.Height = (int)values[4].NumericValue;
+                    destination.X = (int)parameters.Values[5].NumericValue;
+                    destination.Y = (int)parameters.Values[6].NumericValue;
+                    destination.Width = (int)parameters.Values[3].NumericValue;
+                    destination.Height = (int)parameters.Values[4].NumericValue;
 
                     Graphic.DrawImage(img, source, destination, GraphicsUnit.Pixel);
                 }
@@ -140,29 +140,29 @@ namespace DemoGame
             return null;
         }
 
-        public DopaScript.Value FillRectangle(List<DopaScript.Value> values)
+        public DopaScript.Value FillRectangle(DopaScript.FunctionCallArgs parameters)
         {
             this.Invoke(new Action(() =>
             {
-                Brush brush = new SolidBrush(Color.FromName(values[0].StringValue));
+                Brush brush = new SolidBrush(Color.FromName(parameters.Values[0].StringValue));
 
                 Rectangle rect = new Rectangle();
-                rect.X = (int)values[1].NumericValue;
-                rect.Y = (int)values[2].NumericValue;
-                rect.Width = (int)values[3].NumericValue;
-                rect.Height = (int)values[4].NumericValue;
+                rect.X = (int)parameters.Values[1].NumericValue;
+                rect.Y = (int)parameters.Values[2].NumericValue;
+                rect.Width = (int)parameters.Values[3].NumericValue;
+                rect.Height = (int)parameters.Values[4].NumericValue;
 
                 Graphic.FillRectangle(brush, rect);
             }));
             return null;
         }
 
-        public DopaScript.Value IsKeyPressed(List<DopaScript.Value> values)
+        public DopaScript.Value IsKeyPressed(DopaScript.FunctionCallArgs parameters)
         {
             return new DopaScript.Value()
             {
                 Type = DopaScript.Value.DataType.Boolean,
-                BoolValue = CurrentKeyPressed.Contains((int)values[0].NumericValue)
+                BoolValue = CurrentKeyPressed.Contains((int)parameters.Values[0].NumericValue)
             };
         }
 

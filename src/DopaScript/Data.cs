@@ -3,6 +3,13 @@ using System.Collections.Generic;
 
 namespace DopaScript
 {
+    public class ScriptException : Exception
+    {
+        public int Line { get; set; }
+        public int Column { get; set; }
+        public int ErrorCode { get; set; }
+    }
+
     public class Value
     {
         public enum DataType { Undefined, String, Numeric, Boolean, DateTime, TimeSpan, Array, Structure }
@@ -66,10 +73,18 @@ namespace DopaScript
         }
     }
 
+    public class FunctionCallArgs
+    {
+        public String Name { get; set; }
+        public Interpreter Interpreter { get; set; }
+        public List<Value> Values { get; set; }
+    }
+
     abstract class Instruction
     {
         public int Line { get; set; }
         public int Position { get; set; }
+        public int Column { get; set; }
 
         public List<PathParameter> Path { get; set; }
     }

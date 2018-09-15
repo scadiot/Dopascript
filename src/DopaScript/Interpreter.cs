@@ -12,7 +12,7 @@ namespace DopaScript
         List<Value> _heap;
         Function _currentFunction;
 
-        public delegate Value FunctionDelegate(List<Value> values);
+        public delegate Value FunctionDelegate(FunctionCallArgs parameters);
         Dictionary<string, FunctionDelegate> _embededFunctions;
         EmbededLibrary _embededLibrary;
 
@@ -44,10 +44,11 @@ namespace DopaScript
         public void Parse(string source)
         {
             Tokenizer tokenizer = new Tokenizer();
-            var tokens = tokenizer.Tokenize(source);
+            Tokenizer.Token[] tokens = null;
+            TryToExecute(() => { tokens = tokenizer.Tokenize(source); }, 10000, 0, 0);
 
             SyntaxAnalyser syntaxAnalyser = new SyntaxAnalyser();
-            _program = syntaxAnalyser.Analyse(tokens);
+            TryToExecute(() => { _program = syntaxAnalyser.Analyse(tokens); }, 20000, 0, 0);
         }
 
         public Value Execute()
@@ -61,8 +62,9 @@ namespace DopaScript
 
             foreach (Instruction instruction in _program.Instructions)
             {
-                InstructionResult result = ExecuteInstruction(instruction);
-                if(result != null && result.Return)
+                InstructionResult result = null;
+                TryToExecute(() => { result = ExecuteInstruction(instruction); }, 30000, instruction.Line, instruction.Position);
+                if (result != null && result.Return)
                 {
                     return result.Value;
                 }
@@ -99,6 +101,7 @@ namespace DopaScript
             InstructionAssignment instructionAssignment = instruction as InstructionAssignment;
 
             Variable variable = GetVariableByName(instructionAssignment.VariableName);
+            ThrowExceptionOnCondition(variable == null, instructionAssignment, 30001, new string[] { instructionAssignment.VariableName });
             Value value = ExecuteInstruction(instructionAssignment.Instruction).Value;
 
             Value variableValue = GetVariableValue(variable);
@@ -172,12 +175,20 @@ namespace DopaScript
 
             if (_embededFunctions.ContainsKey(instructionFunction.FunctionName))
             {
-                result.Value = _embededFunctions[instructionFunction.FunctionName](values);
+                FunctionCallArgs functionCallArgs = new FunctionCallArgs()
+                {
+                    Interpreter = this,
+                    Name = instructionFunction.FunctionName,
+                    Values = values
+                };
+
+                result.Value = _embededFunctions[instructionFunction.FunctionName](functionCallArgs);
             }
             else
             {
                 Function previousFunction = _currentFunction;
-                _currentFunction = _program.Functions.First(f => f.Name == instructionFunction.FunctionName);
+                _currentFunction = _program.Functions.FirstOrDefault(f => f.Name == instructionFunction.FunctionName);
+                ThrowExceptionOnCondition(_currentFunction == null, instruction, 30002, new string[] { instructionFunction.FunctionName });
 
                 _heap.AddRange(values);
                 int numberOfValueToAdd = _currentFunction.Variables.Count - _currentFunction.ParametersCount;
@@ -203,6 +214,7 @@ namespace DopaScript
             InstructionVariableValue instructionVariableValue = instruction as InstructionVariableValue;
 
             Variable variable = GetVariableByName(instructionVariableValue.VariableName);
+            ThrowExceptionOnCondition(variable == null, instruction, 30003, new string[] { instructionVariableValue.VariableName });
             Value value = GetVariableValue(variable);
 
             value = ResolvePath(value, instructionVariableValue.Path);
@@ -552,6 +564,40 @@ namespace DopaScript
             destination.Structure = value.Structure;
             destination.DateTimeValue = value.DateTimeValue;
             destination.TimeSpanValue = value.TimeSpanValue;
+        }
+
+        void TryToExecute(Action action, int errorCode, int line, int column)
+        {
+            try
+            {
+                action();
+            }
+            catch (ScriptException scriptException)
+            {
+                throw scriptException;
+            }
+            catch
+            {
+                throw new ScriptException()
+                {
+                    ErrorCode = errorCode,
+                    Column = column,
+                    Line = line
+                };
+            }
+        }
+
+        void ThrowExceptionOnCondition(bool condition, Instruction instruction, int errorCode, string[] keyWords)
+        {
+            if(condition)
+            {
+                throw new ScriptException()
+                {
+                    ErrorCode = errorCode,
+                    Column = instruction.Column,
+                    Line = instruction.Line
+                };
+            }
         }
     }
 }

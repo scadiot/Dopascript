@@ -21,6 +21,7 @@ namespace DopaScript
         {
             public string Value { get; set; }
             public int Line { get; set; }
+            public int Column { get; set; }
             public int Position { get; set; }
             public TokenType TokenType { get; set; }
             public TokenName TokenName { get; set; }
@@ -33,6 +34,7 @@ namespace DopaScript
             List<Token> tokens = new List<Token>();
             int index = 0;
             int line = 0;
+            int Column = 0;
             while (index < source.Length)
             {
                 Token token = null;
@@ -41,6 +43,7 @@ namespace DopaScript
                 if (source[index] == '\n')
                 {
                     line++;
+                    Column = 0;
                     index++;
                 }
                 else if (IsWhiteSpace(source[index]))
@@ -79,7 +82,7 @@ namespace DopaScript
                 {
                     token.Position = position;
                     token.Line = line;
-
+                    token.Column = Column;
                     tokens.Add(token);
                 }
             }

@@ -46,6 +46,7 @@ namespace DopaScript
         Instruction AnalyseInstruction(Tokenizer.Token[] tokens, int index, out int tokenCount)
         {
             tokenCount = 0;
+            Instruction result = null;
 
             if (tokens[index].TokenName == Tokenizer.TokenName.VariableDeclaration)
             {
@@ -57,60 +58,67 @@ namespace DopaScript
             }
             else if (IsAssignment(tokens, index))
             {
-                return AnalyseAssignement(tokens, index, out tokenCount);
+                result = AnalyseAssignement(tokens, index, out tokenCount);
             }
             else if (IsOperation(tokens, index))
             {
-                return AnalyseOperation(tokens, index, out tokenCount);
+                result = AnalyseOperation(tokens, index, out tokenCount);
             }
             else if (tokens.Length > 1 &&
                      tokens[index].TokenType == Tokenizer.TokenType.Indentifier &&
                      tokens[index + 1].TokenName == Tokenizer.TokenName.ParenthesesOpen)
             {
-                return AnalyseFunctionCall(tokens, index, out tokenCount);
+                result = AnalyseFunctionCall(tokens, index, out tokenCount);
             }
             else if (IsUnaryOperator(tokens, index))
             {
-                return AnalyseUnaryOperator(tokens, index, out tokenCount);
+                result = AnalyseUnaryOperator(tokens, index, out tokenCount);
             }
             else if (tokens.Length == index + 1 && tokens[index].TokenType == Tokenizer.TokenType.Literal)
             {
-                return AnalyseValueInstruction(tokens, index, out tokenCount);
+                result = AnalyseValueInstruction(tokens, index, out tokenCount);
             }
             else if (tokens[index].TokenType == Tokenizer.TokenType.Indentifier)
             {
-                return AnalyseVariableValueInstruction(tokens, index, out tokenCount);
+                result = AnalyseVariableValueInstruction(tokens, index, out tokenCount);
             }
             else if (tokens[index].TokenName == Tokenizer.TokenName.Return)
             {
-                return AnalyseReturn(tokens, index, out tokenCount);
+                result = AnalyseReturn(tokens, index, out tokenCount);
             }
             else if (tokens[index].TokenName == Tokenizer.TokenName.ParenthesesOpen)
             {
-                return AnalyseParenthesesBloc(tokens, index, out tokenCount);
+                result = AnalyseParenthesesBloc(tokens, index, out tokenCount);
             }
             else if (tokens[index].TokenName == Tokenizer.TokenName.Condition)
             {
-                return AnalyseCondition(tokens, index, out tokenCount);
+                result = AnalyseCondition(tokens, index, out tokenCount);
             }
             else if (tokens[index].TokenName == Tokenizer.TokenName.While)
             {
-                return AnalyseWhile(tokens, index, out tokenCount);
+                result = AnalyseWhile(tokens, index, out tokenCount);
             }
             else if (tokens[index].TokenName == Tokenizer.TokenName.For)
             {
-                return AnalyseFor(tokens, index, out tokenCount);
+                result = AnalyseFor(tokens, index, out tokenCount);
             }
             else if (tokens[index].TokenName == Tokenizer.TokenName.Negation)
             {
-                return AnalyseNegation(tokens, index, out tokenCount);
+                result = AnalyseNegation(tokens, index, out tokenCount);
             }
             else if (tokens[index].TokenName == Tokenizer.TokenName.Break)
             {
-                return AnalyseBreak(tokens, index, out tokenCount);
+                result = AnalyseBreak(tokens, index, out tokenCount);
             }
 
-            return null;
+            if(result != null)
+            {
+                result.Position = tokens[index].Position;
+                result.Line = tokens[index].Line;
+                result.Column = tokens[index].Column;
+            }
+
+            return result;
         }
 
         void AnalyseVariableDeclation(Tokenizer.Token[] Tokens, int index, out int tokenCount)

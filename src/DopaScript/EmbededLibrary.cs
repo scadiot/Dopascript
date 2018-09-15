@@ -30,25 +30,25 @@ namespace DopaScript
             EmbededFunctions.Add("sleep", Sleep);
         }
 
-        public Value Print(List<Value> values)
+        public Value Print(FunctionCallArgs parameters)
         {
-            switch (values[0].Type)
+            switch (parameters.Values[0].Type)
             {
                 case Value.DataType.String:
-                    Console.WriteLine(values[0].StringValue);
+                    Console.WriteLine(parameters.Values[0].StringValue);
                     break;
                 case Value.DataType.Numeric:
-                    Console.WriteLine(values[0].NumericValue);
+                    Console.WriteLine(parameters.Values[0].NumericValue);
                     break;
                 case Value.DataType.Boolean:
-                    Console.WriteLine(values[0].BoolValue);
+                    Console.WriteLine(parameters.Values[0].BoolValue);
                     break;
             }
             
             return new Value();
         }
 
-        public Value Read(List<Value> values)
+        public Value Read(FunctionCallArgs parameters)
         {
             string line = Console.ReadLine();
             return new Value()
@@ -57,47 +57,47 @@ namespace DopaScript
             };
         }
 
-        public Value ArrayNew(List<Value> values)
+        public Value ArrayNew(FunctionCallArgs parameters)
         {
             Value result = new Value()
             {
                 Type = Value.DataType.Array,
-                Array = values
+                Array = parameters.Values
             };
 
             return result;
         }
 
-        public Value ArrayPush(List<Value> values)
+        public Value ArrayPush(FunctionCallArgs parameters)
         {
-            values[0].Array.Add(values[1]);
+            parameters.Values[0].Array.Add(parameters.Values[1]);
             return null;
         }
 
-        public Value ArrayLength(List<Value> values)
+        public Value ArrayLength(FunctionCallArgs parameters)
         {
             Value value = new Value()
             {
                 Type = Value.DataType.Numeric,
-                NumericValue = values[0].Array.Count
+                NumericValue = parameters.Values[0].Array.Count
             };
             return value;
         }
 
-        public Value ArrayClear(List<Value> values)
+        public Value ArrayClear(FunctionCallArgs parameters)
         {
-            values[0].Array.Clear();
+            parameters.Values[0].Array.Clear();
             return null;
         }
 
-        public Value ArrayRemoveAt(List<Value> values)
+        public Value ArrayRemoveAt(FunctionCallArgs parameters)
         {
-            int valueIndex = (int)values[1].NumericValue;
-            values[0].Array.RemoveAt(valueIndex);
+            int valueIndex = (int)parameters.Values[1].NumericValue;
+            parameters.Values[0].Array.RemoveAt(valueIndex);
             return null;
         }
 
-        public Value StructureNew(List<Value> values)
+        public Value StructureNew(FunctionCallArgs parameters)
         {
             Value result = new Value()
             {
@@ -108,7 +108,7 @@ namespace DopaScript
             return result;
         }
 
-        public Value GetFiles(List<Value> values)
+        public Value GetFiles(FunctionCallArgs parameters)
         {
             Value result = new Value()
             {
@@ -116,7 +116,7 @@ namespace DopaScript
                 Array = new List<Value>()
             };
 
-            System.IO.DirectoryInfo dir = new System.IO.DirectoryInfo(values[0].StringValue);
+            System.IO.DirectoryInfo dir = new System.IO.DirectoryInfo(parameters.Values[0].StringValue);
             foreach(var file in dir.GetFiles())
             {
                 Value value = CreateFileInfo(file);
@@ -141,7 +141,7 @@ namespace DopaScript
             return result;
         }
 
-        public Value GetDirectories(List<Value> values)
+        public Value GetDirectories(FunctionCallArgs parameters)
         {
             Value result = new Value()
             {
@@ -152,44 +152,44 @@ namespace DopaScript
             return result;
         }
 
-        public Value Date(List<Value> values)
+        public Value Date(FunctionCallArgs parameters)
         {
             DateTime dateTime = new DateTime();
-            if(values.Count == 0)
+            if(parameters.Values.Count == 0)
             {
                 dateTime = DateTime.Now;
             }
-            else if (values.Count == 3)
+            else if (parameters.Values.Count == 3)
             {
-                int year = (int)values[0].NumericValue;
-                int month = (int)values[1].NumericValue;
-                int day = (int)values[2].NumericValue;
+                int year = (int)parameters.Values[0].NumericValue;
+                int month = (int)parameters.Values[1].NumericValue;
+                int day = (int)parameters.Values[2].NumericValue;
 
                 dateTime = new DateTime(year, month, day);
             }
-            else if (values.Count == 6)
+            else if (parameters.Values.Count == 6)
             {
-                int year = (int)values[0].NumericValue;
-                int month = (int)values[1].NumericValue;
-                int day = (int)values[2].NumericValue;
+                int year = (int)parameters.Values[0].NumericValue;
+                int month = (int)parameters.Values[1].NumericValue;
+                int day = (int)parameters.Values[2].NumericValue;
 
-                int hour = (int)values[3].NumericValue;
-                int minute = (int)values[4].NumericValue;
-                int second = (int)values[5].NumericValue;
+                int hour = (int)parameters.Values[3].NumericValue;
+                int minute = (int)parameters.Values[4].NumericValue;
+                int second = (int)parameters.Values[5].NumericValue;
 
                 dateTime = new DateTime(year, month, day, hour, minute, second);
             }
-            else if (values.Count == 7)
+            else if (parameters.Values.Count == 7)
             {
-                int year = (int)values[0].NumericValue;
-                int month = (int)values[1].NumericValue;
-                int day = (int)values[2].NumericValue;
+                int year = (int)parameters.Values[0].NumericValue;
+                int month = (int)parameters.Values[1].NumericValue;
+                int day = (int)parameters.Values[2].NumericValue;
 
-                int hour = (int)values[3].NumericValue;
-                int minute = (int)values[4].NumericValue;
-                int second = (int)values[5].NumericValue;
+                int hour = (int)parameters.Values[3].NumericValue;
+                int minute = (int)parameters.Values[4].NumericValue;
+                int second = (int)parameters.Values[5].NumericValue;
 
-                int millisecond = (int)values[6].NumericValue;
+                int millisecond = (int)parameters.Values[6].NumericValue;
 
                 dateTime = new DateTime(year, month, day, hour, minute, second, millisecond);
             }
@@ -201,18 +201,18 @@ namespace DopaScript
             };
         }
 
-        public Value TimespanTotalMilliseconds(List<Value> values)
+        public Value TimespanTotalMilliseconds(FunctionCallArgs parameters)
         {
             return new Value()
             {
                 Type = Value.DataType.Numeric,
-                NumericValue = (decimal)values[0].TimeSpanValue.TotalMilliseconds
+                NumericValue = (decimal)parameters.Values[0].TimeSpanValue.TotalMilliseconds
             };
         }
 
-        public Value Sleep(List<Value> values)
+        public Value Sleep(FunctionCallArgs parameters)
         {
-            System.Threading.Thread.Sleep(Math.Max((int)values[0].NumericValue, 0));
+            System.Threading.Thread.Sleep(Math.Max((int)parameters.Values[0].NumericValue, 0));
             return null;
         }
     }

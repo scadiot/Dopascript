@@ -20,17 +20,38 @@ namespace Test
             foreach (FileInfo file in dir.GetFiles("*.txt"))
             {
                 string source = File.ReadAllText(file.FullName);
-                Interpreter interpreter = new Interpreter();
-                interpreter.Parse(source);
-                Value value = interpreter.Execute();
-                if(value.Type == Value.DataType.Boolean && value.BoolValue)
+                bool valid = false;
+                try
+                {
+                    Interpreter interpreter = new Interpreter();
+                    interpreter.Parse(source);
+                    Value value = interpreter.Execute();
+                    valid = value.Type == Value.DataType.Boolean && value.BoolValue;
+                }
+                catch(DopaScript.ScriptException scriptException)
+                {
+                    if(file.Name.ToLower().Contains("exception"))
+                    {
+                        int exceptionNumber = int.Parse(Path.GetFileNameWithoutExtension(file.FullName).Split('_')[1]);
+                        if(scriptException.ErrorCode == exceptionNumber)
+                        {
+                            valid = true;
+                        }
+                    }
+                }
+                catch
+                {
+
+                }
+
+                if (valid)
                 {
                     Console.WriteLine(Path.GetFileNameWithoutExtension(file.Name).PadRight(30, '.') + " OK");
                 }
                 else
                 {
                     Console.WriteLine(Path.GetFileNameWithoutExtension(file.Name).PadRight(30, '.') + " FAIL");
-                    testOk = false; 
+                    testOk = false;
                 }
             }
             
