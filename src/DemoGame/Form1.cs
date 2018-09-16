@@ -54,14 +54,22 @@ namespace DemoGame
 
             string source = File.ReadAllText(Path.Combine(SelectedGame.FullName, "script.txt"));
             
-            Interpreter = new DopaScript.Interpreter();
-            Interpreter.Parse(source);
+            try
+            {
+                Interpreter = new DopaScript.Interpreter();
+                Interpreter.Parse(source);
 
-            Interpreter.AddFunction("flip", Flip);
-            Interpreter.AddFunction("loadImage", LoadImage);
-            Interpreter.AddFunction("drawImage", DrawImage);
-            Interpreter.AddFunction("isKeyPressed", IsKeyPressed);
-            Interpreter.AddFunction("fillRectangle", FillRectangle);
+                Interpreter.AddFunction("flip", Flip);
+                Interpreter.AddFunction("loadImage", LoadImage);
+                Interpreter.AddFunction("drawImage", DrawImage);
+                Interpreter.AddFunction("isKeyPressed", IsKeyPressed);
+                Interpreter.AddFunction("fillRectangle", FillRectangle);
+            }
+            catch(DopaScript.ScriptException scriptException)
+            {
+                MessageBox.Show(string.Format("Error {0} - Line {1}, Column {2} : {3}", scriptException.ErrorCode, scriptException.Line, scriptException.Column, scriptException.Message));
+            }
+
 
             Thread thread = new Thread(ExecGame);
             thread.IsBackground = true;
@@ -70,7 +78,14 @@ namespace DemoGame
 
         public void ExecGame()
         {
-            Interpreter.Execute();
+            try
+            { 
+                Interpreter.Execute();
+            }
+            catch (DopaScript.ScriptException scriptException)
+            {
+                MessageBox.Show(string.Format("Error {0} - Line {1}, Column {2} : {3}", scriptException.ErrorCode, scriptException.Line, scriptException.Column, scriptException.Message));
+            }
         }
 
         public void InitData()

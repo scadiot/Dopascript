@@ -585,7 +585,7 @@ namespace DopaScript
                 {
                     ErrorCode = errorCode,
                     Column = column,
-                    Line = line
+                    Line = line + 1
                 };
             }
         }
@@ -599,7 +599,7 @@ namespace DopaScript
                 {
                     ErrorCode = errorCode,
                     Column = instruction.Column,
-                    Line = instruction.Line
+                    Line = instruction.Line + 1
                 };
             }
         }

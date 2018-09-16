@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2042
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DopaScript", "DopaScript\DopaScript.csproj", "{FE798958-7420-4ACF-A15E-5436E6F6C941}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{B7D40D8D-2F18-4FA7-BB42-1092B35B88F8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DopaScript.Test", "DopaScript.Test\DopaScript.Test.csproj", "{B7D40D8D-2F18-4FA7-BB42-1092B35B88F8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoGame", "DemoGame\DemoGame.csproj", "{35DD9EA7-C012-448D-9B5E-9C3C5B422E04}"
 EndProject

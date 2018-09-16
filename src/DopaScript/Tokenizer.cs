@@ -34,17 +34,19 @@ namespace DopaScript
             List<Token> tokens = new List<Token>();
             int index = 0;
             int line = 0;
-            int Column = 0;
+            int startLineIndex = 0;
             while (index < source.Length)
             {
                 Token token = null;
                 int position = index;
+                int previousIndex = index;
+                int column = (index - startLineIndex) + 1;
 
                 if (source[index] == '\n')
                 {
                     line++;
-                    Column = 0;
                     index++;
+                    startLineIndex = index;
                 }
                 else if (IsWhiteSpace(source[index]))
                 {
@@ -78,11 +80,11 @@ namespace DopaScript
                     index++;
                 }
 
-                if(token != null)
+                if (token != null)
                 {
                     token.Position = position;
                     token.Line = line;
-                    token.Column = Column;
+                    token.Column = column;
                     tokens.Add(token);
                 }
             }
