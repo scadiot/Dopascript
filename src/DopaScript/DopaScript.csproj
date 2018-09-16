@@ -40,6 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Errors.cs" />
     <Compile Include="Data.cs" />
     <Compile Include="EmbededLibrary.cs" />
     <Compile Include="Interpreter.cs" />

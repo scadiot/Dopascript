@@ -8,6 +8,11 @@ namespace DopaScript
         public int Line { get; set; }
         public int Column { get; set; }
         public int ErrorCode { get; set; }
+
+        public ScriptException(string message)
+    :       base(message)
+        {
+        }
     }
 
     public class Value

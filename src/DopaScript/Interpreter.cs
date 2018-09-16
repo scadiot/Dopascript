@@ -15,12 +15,14 @@ namespace DopaScript
         public delegate Value FunctionDelegate(FunctionCallArgs parameters);
         Dictionary<string, FunctionDelegate> _embededFunctions;
         EmbededLibrary _embededLibrary;
+        Errors _erros;
 
         public Interpreter()
         {
             _embededFunctions = new Dictionary<string, FunctionDelegate>();
             _embededLibrary = new EmbededLibrary();
             _embededFunctions = _embededLibrary.EmbededFunctions;
+            _erros = new Errors();
 
             InstructionExecutors.Add(typeof(InstructionAssignment), ExecuteInstructionAssignment);
             InstructionExecutors.Add(typeof(InstructionValue), ExecuteInstructionValue);
@@ -578,7 +580,8 @@ namespace DopaScript
             }
             catch
             {
-                throw new ScriptException()
+                string message = _erros.GetMessage(errorCode, new string[0]);
+                throw new ScriptException(message)
                 {
                     ErrorCode = errorCode,
                     Column = column,
@@ -591,7 +594,8 @@ namespace DopaScript
         {
             if(condition)
             {
-                throw new ScriptException()
+                string message = _erros.GetMessage(errorCode, keyWords);
+                throw new ScriptException(message)
                 {
                     ErrorCode = errorCode,
                     Column = instruction.Column,
