@@ -177,6 +177,17 @@ namespace DopaScript
         }
     }
 
+    class InstructionDoWhile : Instruction
+    {
+        public Instruction TestInstruction { get; set; }
+        public List<Instruction> BlocInstruction { get; set; }
+
+        public InstructionDoWhile()
+        {
+            BlocInstruction = new List<Instruction>();
+        }
+    }
+
     class InstructionFor : Instruction
     {
         public Instruction InitInstruction { get; set; }

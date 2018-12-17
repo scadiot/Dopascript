@@ -32,6 +32,7 @@ namespace DopaScript
             InstructionExecutors.Add(typeof(InstructionOperation), ExecuteInstructionOperation);
             InstructionExecutors.Add(typeof(InstructionCondition), ExecuteInstructionCondition);
             InstructionExecutors.Add(typeof(InstructionWhile), ExecuteInstructionWhile);
+            InstructionExecutors.Add(typeof(InstructionDoWhile), ExecuteInstructionDoWhile);
             InstructionExecutors.Add(typeof(InstructionUnaryOperator), ExecuteInstructionUnaryOperator);
             InstructionExecutors.Add(typeof(InstructionFor), ExecuteInstructionFor);
             InstructionExecutors.Add(typeof(InstructionNegation), ExecuteInstructionNegation);
@@ -406,12 +407,54 @@ namespace DopaScript
                 foreach (Instruction blocInstruction in instructionWhile.BlocInstruction)
                 {
                     var result = ExecuteInstruction(blocInstruction);
-                    if (result != null && result.Return)
+                    if (result != null)
                     {
-                        return result;
+                        if (result.Return)
+                        {
+                            return result;
+                        }
+                        else if (result.Break)
+                        {
+                            return new InstructionResult()
+                            {
+                                Return = false
+                            };
+                        }
                     }
                 }
             }
+
+            return new InstructionResult()
+            {
+                Return = false
+            };
+        }
+
+        InstructionResult ExecuteInstructionDoWhile(Instruction instruction)
+        {
+            InstructionDoWhile instructionDoWhile = instruction as InstructionDoWhile;
+
+            do
+            {
+                foreach (Instruction blocInstruction in instructionDoWhile.BlocInstruction)
+                {
+                    var result = ExecuteInstruction(blocInstruction);
+                    if (result != null)
+                    {
+                        if(result.Return)
+                        {
+                            return result;
+                        }
+                        else if (result.Break)
+                        {
+                            return new InstructionResult()
+                            {
+                                Return = false
+                            };
+                        }
+                    }
+                }
+            } while (ExecuteInstruction(instructionDoWhile.TestInstruction).Value.BoolValue);
 
             return new InstructionResult()
             {
@@ -428,9 +471,19 @@ namespace DopaScript
             while (ExecuteInstruction(instructionFor.TestInstruction).Value.BoolValue)
             {
                 InstructionResult result = ExecuteBloc(instructionFor.BlocInstruction.ToArray());
-                if (result != null && (result.Return || result.Break))
+                if (result != null)
                 {
-                    return result;
+                    if (result.Return)
+                    {
+                        return result;
+                    }
+                    else if (result.Break)
+                    {
+                        return new InstructionResult()
+                        {
+                            Return = false
+                        };
+                    }
                 }
 
                 ExecuteInstruction(instructionFor.IncrementInstruction);

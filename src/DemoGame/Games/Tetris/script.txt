@@ -21,8 +21,8 @@ function Init()
 	var tetromino_i = arrayNew();
 	arrayPush(tetromino_i, arrayNew(0, 0, 0, 0,  1, 1, 1, 1,  0, 0, 0, 0,  0, 0, 0, 0));
 	arrayPush(tetromino_i, arrayNew(0, 0, 1, 0,  0, 0, 1, 0,  0, 0, 1, 0,  0, 0, 1, 0));
-	arrayPush(tetromino_i, arrayNew(0, 0, 0, 0,  0, 0, 0, 0,  1, 1, 1, 1,  0, 0, 0, 0));
-	arrayPush(tetromino_i, arrayNew(0, 1, 0, 0,  0, 1, 0, 0,  0, 1, 0, 0,  0, 1, 0, 0));
+	arrayPush(tetromino_i, arrayNew(0, 0, 0, 0,  1, 1, 1, 1,  0, 0, 0, 0,  0, 0, 0, 0));
+	arrayPush(tetromino_i, arrayNew(0, 0, 1, 0,  0, 0, 1, 0,  0, 0, 1, 0,  0, 0, 1, 0));
 	arrayPush(tetrominos, tetromino_i);
 	
 	currentTetromino = structureNew();
