@@ -208,6 +208,7 @@ namespace DopaScript
             }
 
             result.Value = ResolvePath(result.Value, instructionFunction.Path);
+            result.Return = false;
 
             return result;
         }

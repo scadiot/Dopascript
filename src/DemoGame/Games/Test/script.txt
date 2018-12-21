@@ -1,0 +1,16 @@
+function test(v)
+{
+	var i;
+	v = v + 1;
+	return 0;
+}
+
+function update()
+{
+    var t = 1;
+    test(t);
+    print("result " + t);
+}
+
+update();
+
