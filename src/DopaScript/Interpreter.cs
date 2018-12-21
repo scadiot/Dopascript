@@ -9,7 +9,7 @@ namespace DopaScript
         Program _program;
 
         Value[] _globalVariables;
-        List<Value> _heap;
+        List<Value> _stack;
         Function _currentFunction;
 
         public delegate Value FunctionDelegate(FunctionCallArgs parameters);
@@ -61,7 +61,7 @@ namespace DopaScript
             {
                 _globalVariables[i] = new Value();
             }
-            _heap = new List<Value>();
+            _stack = new List<Value>();
 
             foreach (Instruction instruction in _program.Instructions)
             {
@@ -193,18 +193,17 @@ namespace DopaScript
                 _currentFunction = _program.Functions.FirstOrDefault(f => f.Name == instructionFunction.FunctionName);
                 ThrowExceptionOnCondition(_currentFunction == null, instruction, 30002, new string[] { instructionFunction.FunctionName });
 
-                _heap.AddRange(values);
+                _stack.AddRange(values);
                 int numberOfValueToAdd = _currentFunction.Variables.Count - _currentFunction.ParametersCount;
                 for (int i = 0;i < numberOfValueToAdd;i++)
                 {
-                    _heap.Add(new Value());
+                    _stack.Add(new Value());
                 }
 
                 result = ExecuteBloc(_currentFunction.Instructions.ToArray());
 
+                _stack.RemoveRange(_stack.Count - _currentFunction.Variables.Count, _currentFunction.Variables.Count);
                 _currentFunction = previousFunction;
-
-                _heap.RemoveRange(_heap.Count - instructionFunction.Parameters.Count, instructionFunction.Parameters.Count);
             }
 
             result.Value = ResolvePath(result.Value, instructionFunction.Path);
@@ -562,7 +561,7 @@ namespace DopaScript
             }
             else
             {
-                return _heap[_heap.Count - _currentFunction.Variables.Count + variable.Index];
+                return _stack[_stack.Count - _currentFunction.Variables.Count + variable.Index];
             }
         }
 
