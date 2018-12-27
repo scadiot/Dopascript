@@ -25,10 +25,52 @@ function Init()
     arrayPush(tetromino_i, arrayNew(0, 0, 1, 0,  0, 0, 1, 0,  0, 0, 1, 0,  0, 0, 1, 0));
     arrayPush(tetrominos, tetromino_i);
     
+	var tetromino_o = arrayNew();
+    arrayPush(tetromino_o, arrayNew(0, 0, 0, 0,  0, 2, 2, 0,  0, 2, 2, 0,  0, 0, 0, 0));
+    arrayPush(tetromino_o, arrayNew(0, 0, 0, 0,  0, 2, 2, 0,  0, 2, 2, 0,  0, 0, 0, 0));
+    arrayPush(tetromino_o, arrayNew(0, 0, 0, 0,  0, 2, 2, 0,  0, 2, 2, 0,  0, 0, 0, 0));
+    arrayPush(tetromino_o, arrayNew(0, 0, 0, 0,  0, 2, 2, 0,  0, 2, 2, 0,  0, 0, 0, 0));
+    arrayPush(tetrominos, tetromino_o);
+	
+	var tetromino_t = arrayNew();
+    arrayPush(tetromino_t, arrayNew(3, 3, 3, 0,  0, 3, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0));
+    arrayPush(tetromino_t, arrayNew(0, 0, 3, 0,  0, 3, 3, 0,  0, 0, 3, 0,  0, 0, 0, 0));
+    arrayPush(tetromino_t, arrayNew(0, 0, 0, 0,  0, 3, 0, 0,  3, 3, 3, 0,  0, 0, 0, 0));
+    arrayPush(tetromino_t, arrayNew(3, 0, 0, 0,  3, 3, 0, 0,  3, 0, 0, 0,  0, 0, 0, 0));
+    arrayPush(tetrominos, tetromino_t);
+	
+	var tetromino_l = arrayNew();
+    arrayPush(tetromino_l, arrayNew(4, 4, 4, 0,  4, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0));
+    arrayPush(tetromino_l, arrayNew(0, 4, 4, 0,  0, 0, 4, 0,  0, 0, 4, 0,  0, 0, 0, 0));
+    arrayPush(tetromino_l, arrayNew(0, 0, 0, 0,  0, 0, 4, 0,  4, 4, 4, 0,  0, 0, 0, 0));
+    arrayPush(tetromino_l, arrayNew(4, 0, 0, 0,  4, 0, 0, 0,  4, 4, 0, 0,  0, 0, 0, 0));
+    arrayPush(tetrominos, tetromino_l);
+	
+	var tetromino_j = arrayNew();
+    arrayPush(tetromino_j, arrayNew(5, 5, 5, 0,  0, 0, 5, 0,  0, 0, 0, 0,  0, 0, 0, 0));
+    arrayPush(tetromino_j, arrayNew(0, 0, 5, 0,  0, 0, 5, 0,  0, 5, 5, 0,  0, 0, 0, 0));
+    arrayPush(tetromino_j, arrayNew(0, 0, 0, 0,  5, 0, 0, 0,  5, 5, 5, 0,  0, 0, 0, 0));
+    arrayPush(tetromino_j, arrayNew(5, 5, 0, 0,  5, 0, 0, 0,  5, 0, 0, 0,  0, 0, 0, 0));
+    arrayPush(tetrominos, tetromino_j);
+	
+	var tetromino_z = arrayNew();
+    arrayPush(tetromino_z, arrayNew(6, 6, 0, 0,  0, 6, 6, 0,  0, 0, 0, 0,  0, 0, 0, 0));
+    arrayPush(tetromino_z, arrayNew(0, 0, 6, 0,  0, 6, 6, 0,  0, 6, 0, 0,  0, 0, 0, 0));
+    arrayPush(tetromino_z, arrayNew(6, 6, 0, 0,  0, 6, 6, 0,  0, 0, 0, 0,  0, 0, 0, 0));
+    arrayPush(tetromino_z, arrayNew(0, 0, 6, 0,  0, 6, 6, 0,  0, 6, 0, 0,  0, 0, 0, 0));
+    arrayPush(tetrominos, tetromino_z);
+	
+	var tetromino_s = arrayNew();
+    arrayPush(tetromino_s, arrayNew(0, 7, 7, 0,  7, 7, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0));
+    arrayPush(tetromino_s, arrayNew(0, 7, 0, 0,  7, 7, 0, 0,  7, 0, 0, 0,  0, 0, 0, 0));
+    arrayPush(tetromino_s, arrayNew(0, 7, 7, 0,  7, 7, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0));
+    arrayPush(tetromino_s, arrayNew(0, 7, 0, 0,  7, 7, 0, 0,  7, 0, 0, 0,  0, 0, 0, 0));
+    arrayPush(tetrominos, tetromino_s);
+	
     currentTetromino = structureNew();
     currentTetromino.x = 3;
     currentTetromino.y = 0;
-    currentTetromino.tetromino_index = 0;
+    currentTetromino.tetromino_index = 2;
     currentTetromino.orientation = 0;
     
     iteration = 0;
@@ -41,9 +83,9 @@ function testColision(x, y, orientation)
     {
         for(x1 = 0;x1 < 4;x1++)
         {
-            if(tetrominos[currentTetromino.tetromino_index][orientation][y1 * 4 + x1] == 1)
+            if(tetrominos[currentTetromino.tetromino_index][orientation][y1 * 4 + x1] > 0)
 			{
-				if(x + x1 < 0 || x + x1 > 9)
+				if(x + x1 < 0 || x + x1 > 9 || y + y1 > 21 || world[((y + y1) * 10) + x + x1] > 0)
 				{
 					return true;
 				}
@@ -53,12 +95,72 @@ function testColision(x, y, orientation)
 	return false;
 }
 
+function insertTetromino(x, y, orientation)
+{
+    var x1, y1; 
+    for(y1 = 0;y1 < 4;y1++)
+    {
+        for(x1 = 0;x1 < 4;x1++)
+        {
+            if(tetrominos[currentTetromino.tetromino_index][orientation][y1 * 4 + x1] > 0)
+			{
+				world[((y + y1) * 10) + x + x1] = tetrominos[currentTetromino.tetromino_index][orientation][y1 * 4 + x1];
+			}
+        }
+    }
+}
+
+function removeLine(y)
+{
+	var x, y1;
+	for (y1 = y - 1;y1 > 0;y1--)
+	{
+		for (x = 0;x < 10;x++)
+		{
+			world[((y1 + 1) * 10) + x] = world[(y1 * 10) + x];
+		}
+	}
+}
+
+function removeLines()
+{
+	var x, y, removeLine;
+	for (y = 21;y > 0;y--)
+	{
+		removeLine = true;
+		for (x = 0;x < 10;x++)
+		{
+			if(world[(y * 10) + x] == 0)
+			{
+				removeLine = false;
+				break;
+			}
+		}
+		if(removeLine)
+		{
+			removeLine(y);
+			y++;
+		}
+	}
+}
+
 function Update()
 {
 	var next_orientation;
-    if(iteration % 10 == 0)
+    if(iteration % 7 == 0 || sprite.direction.y != 0)
     {
-        currentTetromino.y++;
+		if(testColision(currentTetromino.x, currentTetromino.y + 1, currentTetromino.orientation))
+		{
+			insertTetromino(currentTetromino.x, currentTetromino.y, currentTetromino.orientation);
+			currentTetromino.y = 0;
+			currentTetromino.x = 3;
+			currentTetromino.tetromino_index = random() % 6;
+			removeLines();
+		}
+		else
+		{
+			currentTetromino.y++;
+		}
     }
     
 	if(testColision(currentTetromino.x + sprite.direction.x, currentTetromino.y, currentTetromino.orientation) == false)
@@ -70,10 +172,8 @@ function Update()
     if(isKeyPressed(32))
     {
 		next_orientation = (currentTetromino.orientation + 1) % 4;
-		print("1 " + next_orientation);
 		if(testColision(currentTetromino.x, currentTetromino.y, next_orientation) == false)
 		{
-			print("2 " + next_orientation);
 			currentTetromino.orientation = next_orientation;
 		}
     }
@@ -112,6 +212,21 @@ function DrawBackground()
     }
 }
 
+function DrawWorld()
+{
+    var x, y;
+    for(y = 0;y < 22;y++)
+    {
+        for(x = 0;x < 10;x++)
+        {
+            if(world[y * 10 + x] != 0)
+            {
+                DrawBloc(x + 1, y + 1, world[y * 10 + x]);
+            }
+        }
+    }
+}
+
 function DrawCurrentTetromino()
 {
     var x, y, blocValue;
@@ -131,6 +246,7 @@ function DrawCurrentTetromino()
 function Draw()
 {
     fillRectangle("SkyBlue", 1 * blocSize, 1 * blocSize, 10 * blocSize, 22 * blocSize);
+	DrawWorld();
     DrawCurrentTetromino();
     
     flip();

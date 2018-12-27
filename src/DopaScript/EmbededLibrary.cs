@@ -14,6 +14,8 @@ namespace DopaScript
             EmbededFunctions.Add("print", Print);
             EmbededFunctions.Add("read", Read);
 
+            EmbededFunctions.Add("random", RandomFunction);
+
             EmbededFunctions.Add("arrayNew", ArrayNew);
             EmbededFunctions.Add("arrayPush", ArrayPush);
             EmbededFunctions.Add("arrayLength", ArrayLength);
@@ -56,6 +58,17 @@ namespace DopaScript
                 StringValue = line
             };
         }
+
+        public Value RandomFunction(FunctionCallArgs parameters)
+        {
+            Random rnd = new Random(DateTime.Now.Millisecond);
+            string line = Console.ReadLine();
+            return new Value()
+            {
+                NumericValue = rnd.Next()
+            };
+        }
+        
 
         public Value ArrayNew(FunctionCallArgs parameters)
         {
