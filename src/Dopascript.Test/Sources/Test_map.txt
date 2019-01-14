@@ -1,0 +1,5 @@
+var map = mapNew();
+map["key1"] = 1;
+map[22] = 2;
+
+return map["key" + "1"] == 1 && map[20 + 2] == 2 && map[22] != 3 && map[22] + map["key1"] == 3;

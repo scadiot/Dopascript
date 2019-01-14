@@ -116,6 +116,20 @@ namespace DopaScript
                     Value indexValue = ExecuteInstruction(parameter.IndexInstruction).Value;
                     variableValue = variableValue.Array[(int)indexValue.NumericValue];
                 }
+                else if (variableValue.Type == Value.DataType.Map)
+                {
+                    Value keyValue = ExecuteInstruction(parameter.IndexInstruction).Value;
+                    if (variableValue.Map.ContainsKey(keyValue.ToString()))
+                    {
+                        variableValue = variableValue.Map[keyValue.ToString()];
+                    }
+                    else
+                    {
+                        Value newVariableValue = new Value();
+                        variableValue.Map.Add(keyValue.ToString(), newVariableValue);
+                        variableValue = newVariableValue;
+                    }
+                }
                 else if (variableValue.Type == Value.DataType.Structure)
                 {
                     if(variableValue.Structure.ContainsKey(parameter.Member))
@@ -587,6 +601,11 @@ namespace DopaScript
                     Value indexValue = ExecuteInstruction(parameter.IndexInstruction).Value;
                     value = value.Array[(int)indexValue.NumericValue];
                 }
+                else if (value.Type == Value.DataType.Map)
+                {
+                    Value indexValue = ExecuteInstruction(parameter.IndexInstruction).Value;
+                    value = value.Map[indexValue.ToString()];
+                }
                 else if (value.Type == Value.DataType.Structure)
                 {
                      value = value.Structure[parameter.Member];
@@ -606,6 +625,7 @@ namespace DopaScript
             newValue.Structure = value.Structure;
             newValue.DateTimeValue = value.DateTimeValue;
             newValue.TimeSpanValue = value.TimeSpanValue;
+            newValue.Map = value.Map;
             return newValue;
         }
 
@@ -619,6 +639,7 @@ namespace DopaScript
             destination.Structure = value.Structure;
             destination.DateTimeValue = value.DateTimeValue;
             destination.TimeSpanValue = value.TimeSpanValue;
+            destination.Map = value.Map;
         }
 
         void TryToExecute(Action action, int errorCode, int line, int column)

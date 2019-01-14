@@ -17,7 +17,7 @@ namespace DopaScript
 
     public class Value
     {
-        public enum DataType { Undefined, String, Numeric, Boolean, DateTime, TimeSpan, Array, Structure }
+        public enum DataType { Undefined, String, Numeric, Boolean, DateTime, TimeSpan, Array, Structure, Map }
 
         public DataType Type { get; set; }
 
@@ -28,10 +28,30 @@ namespace DopaScript
         public TimeSpan TimeSpanValue { get; set; }
         public List<Value> Array { get; set; }
         public Dictionary<string, Value> Structure { get; set; }
+        public Dictionary<string, Value> Map { get; set; }
 
         public Value()
         {
             Type = DataType.Undefined;
+        }
+
+        public override string ToString()
+        {
+            switch (Type)
+            {
+                case DataType.String:
+                    return StringValue;
+                case DataType.Numeric:
+                    return NumericValue.ToString();
+                case DataType.Boolean:
+                    return BoolValue.ToString();
+                case DataType.DateTime:
+                    return DateTimeValue.ToString();
+                case DataType.TimeSpan:
+                    return TimeSpanValue.ToString();
+                default:
+                    return "";
+            }
         }
     }
 

@@ -24,6 +24,8 @@ namespace DopaScript
 
             EmbededFunctions.Add("structureNew", StructureNew);
 
+            EmbededFunctions.Add("mapNew", MapNew);
+
             EmbededFunctions.Add("getFiles", GetFiles);
             EmbededFunctions.Add("getDirectories", GetDirectories);
 
@@ -116,6 +118,18 @@ namespace DopaScript
             {
                 Type = Value.DataType.Structure,
                 Structure = new Dictionary<string, Value>()
+            };
+
+            return result;
+        }
+
+
+        public Value MapNew(FunctionCallArgs parameters)
+        {
+            Value result = new Value()
+            {
+                Type = Value.DataType.Map,
+                Map = new Dictionary<string, Value>()
             };
 
             return result;
